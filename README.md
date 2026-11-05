@@ -1,79 +1,87 @@
 # Dirt Sweeper
 
-A small helper for the Steam game **Dirt Clicker**. It sweeps the mouse over the dig field so tools get hovered without you doing it, and plays the red-button timer minigame by itself. It runs as a compact HUD bar on top of the game.
+An auto-sweeper and timer-minigame helper for the Steam game **Dirt Clicker**: a free, small, open-source overlay for Windows.
 
-Unofficial fan-made tool, not affiliated with the game's developers.
+Dirt Sweeper moves your cursor over the whole dig field so every tool gets hovered without you doing it, and plays the red-button timer minigame by itself. Everything is controlled from a compact HUD bar on top of the game, including all of its settings, so you never have to alt-tab.
 
-- **One small exe** (about 85 KB) with no installer. It runs on any Windows 10/11 PC using the built-in .NET Framework 4.8.
-- **Light on your PC:** almost no CPU when idle. While sweeping or watching the timer it does nothing but move the mouse and look at a small part of the screen.
-- **Finds the game window by itself** and scales to its resolution, aspect ratio and monitor refresh rate.
+Website: https://eyyminda.github.io/Dirt-Sweeper/. Unofficial fan-made tool, not affiliated with the developers of Dirt Clicker.
+
+Current version: **0.1.0**. See [CHANGELOG.md](CHANGELOG.md) for what's new.
+
+![Dirt Sweeper over Dirt Clicker: the HUD bar with the settings panel open, and the guides showing the dig field and sweep spots](docs/screenshot.jpg)
+
+## Download
+
+Get `DirtSweeper-<version>.exe` from [Releases](https://github.com/eyyMinda/Dirt-Sweeper/releases/latest) or the [website](https://eyyminda.github.io/Dirt-Sweeper/). It's a single exe of about 100 KB with no installer.
+
+Requirements:
+
+- Windows 10 or 11. Nothing to install: it uses the .NET Framework 4.8 that's built into Windows.
+- Dirt Clicker from Steam. The app finds the game window by itself and adapts to its resolution and aspect ratio.
+- The exe isn't code-signed, so SmartScreen may warn the first time: choose **More info**, then **Run anyway**. You can verify the download against `SHA256SUMS.txt` in the release.
+
+The app collects no data; see [Privacy](#privacy).
 
 ## Features
 
-### Sweeper
-The game checks what the cursor is over once per frame. The sweeper moves the cursor from spot to spot and holds each one for a few frames. The spots form a hexagonal grid sized to your hover circle, which is the fewest spots that still leave no gaps. A bigger circle means fewer spots and faster passes.
+- **Sweeps the whole dig field:** the cursor rests briefly on a set of spots chosen so the hover circles cover the entire field with no gaps, using as few spots as possible. At collision radius 56 on 1920×1080 that's 27 spots, about one second per pass.
+- **Follows your upgrades:** the hover circle size comes from your **collision radius** level. Calibrate once, then press **+** when you buy an upgrade.
+- **Plays the timer minigame:** watches the timer, catches the moment each countdown starts and clicks the red button exactly on time, level after level. Flying dirt particles are ignored.
+- **All settings in the overlay:** the gear on the HUD unfolds the settings right over the game. It never takes focus from the game, so you see every change immediately.
+- **Calibrate with the mouse wheel:** press F7 and scroll until the green ring matches the game's hover circle.
+- **Drag the dig field into place** directly over the game, and see the field, the sweep spots and the timer box with the guides (F6).
+- **Stays out of your way:** only sweeps while the game is in front, stops as soon as you move the mouse, and hides when you switch to another app. The mouse passes through the HUD while the app is moving the cursor.
+- **Light on your PC:** almost no CPU when idle; while working it only moves the mouse and looks at a small part of the screen.
 
-- The hover circle size comes from your in-game **collision radius**. Calibrate it once with the green ring (F7), then just update the number when you buy upgrades.
-- Hold time is set in game frames, so it stays right at any FPS.
-- It only sweeps while the game is in front, and stops when you move the mouse yourself.
+![The timer minigame played by Dirt Sweeper: the HUD shows level 2 of 3 and the game rates the click PERFECT at 00.00](docs/timer-minigame.jpg)
 
-### Timer minigame
-Each level shows `0N.00`, beeps, counts down visibly for about 0.75 s, then hides. Dirt Sweeper watches the timer digits and treats the moment they start changing as the start of the countdown. It then clicks the red button exactly N seconds later, for every level.
+## How to use it
 
-- It only looks at light-grey digit pixels, so the orange dirt particles flying past are ignored.
-- A countdown has to keep changing the digits for at least 0.5 s, and change them a lot compared with the still `0N.00`. A particle drifting over the digits, or the screen switching between levels, doesn't count.
-- If clicks are consistently early or late, the offset setting corrects for it.
-
-### HUD and guides
-- The HUD bar floats over the game. Clicking it never takes focus away from the game, and the mouse passes through it while the app is moving the cursor. It hides when you switch to another app, and you can drag it anywhere.
-- The guides (F6) draw the dig field, the sweep spots, the timer box and the button position over the game, so you can check everything lines up.
-
-## Usage
-
-1. Download `DirtSweeper.exe` from the [Releases](../../releases) page, or build it yourself (see below).
-2. Run it. It finds Dirt Clicker by itself; if the game isn't running, the HUD has a button to launch it.
-3. Open settings with the ⚙ button on the HUD (or double-click the tray icon), set your collision radius and calibrate once.
+1. Start Dirt Clicker and `DirtSweeper.exe` (the HUD has a button to launch the game if it isn't running).
+2. Click the gear on the HUD, set **Collision radius level** to your upgrade level.
+3. Press **F7**, move over the dig field and scroll until the green ring matches the game's hover circle. Press **F7** again.
+4. Press **F5** to sweep. Move the mouse to stop it.
+5. For the timer minigame, press **F8**, then click **Play** in the game. Every level is played automatically, and sweeping resumes afterwards.
 
 | Key | Action |
 | --- | --- |
 | F5 | Start / stop sweeping |
 | F6 | Show / hide guides |
-| F7 | Calibration ring around the cursor |
+| F7 | Calibration ring at the cursor (scroll to resize; Shift = fine, Ctrl = coarse) |
 | F8 | Arm / cancel the timer game (then click Play) |
 | F9 | Show / hide the HUD |
 
-Settings are saved to `DirtSweeper.settings.json` next to the exe. If that folder isn't writable, they go to `%AppData%\DirtSweeper`.
+## Settings
 
-Positions in the settings use the game's 1920×1080 layout. The app scales them to your real window size. Elements in the right-hand shop panel follow its right edge on screens wider than 16:9.
+Everything is in the settings panel (gear on the HUD, or double-click the tray icon). Hovering an item explains it in the bar. Values change with **−** / **+** (hold to repeat) or by scrolling over the row; hold Shift for bigger steps.
 
-## Building
+- **Sweeper:** collision radius level and px per level (calibration), hold time on each spot, spot spacing, the dig field, and whether to stop when you move the mouse, only sweep while the game is in front, vary the pattern and alternate direction every pass.
+- **Timer game:** which levels to play, click offset (if the game says you were late by X ms, lower it by X), resume sweeping afterwards, timer and button positions (pick them by hovering), and detection fine-tuning.
+- **General:** game status, guides, HUD, hotkeys, reset.
 
-You need the [.NET SDK](https://dot.net) (any recent version; it builds against .NET Framework 4.8).
+Tips:
 
-```
-build.cmd
-```
+- If some tools get missed, raise **Hold on each spot**. If everything gets hit, you can try lowering it for faster passes.
+- The defaults are tuned for 1920×1080 fullscreen at 144 FPS. Other resolutions and wider screens are scaled automatically.
 
-This produces `dist\DirtSweeper.exe`. You can also open `DirtSweeper.sln` in Visual Studio or Rider.
+Settings are saved to `DirtSweeper.settings.json` next to the exe (or `%AppData%\DirtSweeper` if that folder isn't writable).
 
-GitHub Actions builds the exe on every push. Pushing a tag such as `v2.1.0` creates a release with the exe attached.
+## Questions
 
-## Project layout
+**Is it safe to use?** Dirt Sweeper never touches the game: it doesn't read or change game files or memory and doesn't inject anything. It only moves the mouse and looks at the timer area of the screen, like a person watching and clicking. Use it at your own discretion.
 
-```
-src/DirtSweeper/
-  Program.cs        entry point, single-instance handling
-  App.cs            wires the HUD, guides, settings, sweeper and minigames together
-  Ui.cs             theme, the HUD bar and the guides overlay
-  SettingsForm.cs   the settings window
-  Sweeper.cs        hex-grid sweep path and the sweep loop
-  TimerGame.cs      Minigame base class, screen capture, and the timer minigame
-  Game.cs           finds the game window and maps 1080p layout to screen pixels
-  Native.cs         Win32 calls: mouse input, monitors, GDI capture, precise timing
-  Settings.cs       saved settings and their defaults
-```
+**Does it work when the game isn't in front?** By default it only sweeps while Dirt Clicker is the active window, so it never moves the mouse while you're doing something else (you can turn that off in the Sweeper tab).
 
-### Adding a minigame
-1. Derive from `Minigame` (see `TimerGame` in `TimerGame.cs`) and implement `Run`. Use `ScreenGrab` to watch part of the screen and `Native.MoveTo` / `MouseDown` / `MouseUp` to act.
-2. Add its settings to `Settings.cs` (in the 1080p layout) and a page for them in `SettingsForm.cs`.
-3. In `App.cs`, create an instance, give it a HUD button and a hotkey, and start it with `RunMinigame`.
+**It clicks the timer too early or too late.** Adjust **Click offset** in the Timer game tab by the number of milliseconds the game reports.
+
+## Privacy
+
+Dirt Sweeper collects no data and has no accounts, analytics or telemetry. It makes no network connections at all. Your settings stay in a file on your PC.
+
+## Credits
+
+Made by [eyyMinda](https://github.com/eyyMinda). Dirt Clicker belongs to its developers; this is an unofficial fan-made tool.
+
+## License
+
+[GNU General Public License v3.0](LICENSE). Not affiliated with or endorsed by the developers of Dirt Clicker.
