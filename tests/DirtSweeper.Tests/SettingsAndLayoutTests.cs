@@ -26,12 +26,14 @@ namespace DirtSweeper.Tests
         }
 
         [Fact]
-        public void Defaults_match_the_tuned_1080p_144hz_setup()
+        public void Defaults_are_a_fresh_game_on_1080p_144hz()
         {
             var s = new Settings();
-            Assert.Equal(56, s.Stat);
-            Assert.Equal(6.44, s.PxPerStat);
+            Assert.Equal(1, s.Stat);            // a new game starts at collision radius level 1
+            Assert.Equal("1,2,3", s.Levels);    // and timer levels 1-3
+            Assert.Equal(6.4, s.PxPerStat);
             Assert.Equal(15, s.HoldMs);
+            Assert.Equal(100, s.Spacing);
             Assert.Equal(new[] { 0.0, 0, 1485, 1080 }, new[] { s.AreaLeft, s.AreaTop, s.AreaRight, s.AreaBottom });
         }
 

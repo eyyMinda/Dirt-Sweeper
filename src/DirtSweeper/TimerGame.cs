@@ -110,6 +110,9 @@ namespace DirtSweeper
     {
         public override string Name => "Timer game";
 
+        /// <summary>How long before the click the cursor is put back on the button (several frames at any FPS).</summary>
+        const double PreAim = 0.06;
+
         public static List<double> ParseLevels(string text)
         {
             var levels = new List<double>();
@@ -154,13 +157,21 @@ namespace DirtSweeper
                         double target = t0.Value + secs + s.OffsetMs / 1000.0;
                         Status = $"{lvl}: clicking at {secs:0.##}s";
                         Native.MoveTo(button.X, button.Y);
+                        // the cursor can drift during an N-second wait (a nudge of the mouse, the game moving it):
+                        // put it back on the button a few frames early so the game sees it hovered, and once more
+                        // right before pressing, so the click always lands on the button
+                        Clock.SleepUntil(target - PreAim, ct);
+                        if (ct.IsCancellationRequested) return false;
+                        bool drifted = Native.CursorPos() != button;
+                        Native.MoveTo(button.X, button.Y);
                         Clock.SleepUntil(target, ct);
                         if (ct.IsCancellationRequested) return false;
+                        if (Native.CursorPos() != button) { drifted = true; Native.MoveTo(button.X, button.Y); }
                         Native.MouseDown();
                         double late = (Clock.Now - target) * 1000;
                         Thread.Sleep(30);
                         Native.MouseUp();
-                        Log($"L{i + 1} {secs:0.##}s: clicked ({late:0.0} ms scheduling delay)");
+                        Log($"L{i + 1} {secs:0.##}s: clicked ({late:0.0} ms scheduling delay{(drifted ? ", cursor put back on the button" : "")})");
                         if (ct.WaitHandle.WaitOne(1000)) return false; // skip the result screen
                         deadline = Clock.Now + 30;
                     }

@@ -78,6 +78,26 @@ namespace DirtSweeper.Tests
             for (int i = 1; i < spots.Count; i++) Assert.NotEqual(spots[i - 1], spots[i]);
         }
 
+        [Theory]
+        [InlineData(3.2)]   // level 1 at 6.4 px/level
+        [InlineData(9.6)]   // level 3
+        [InlineData(20)]
+        public void Small_circles_cover_every_pixel(double radius)
+        {
+            // a corner of the field is enough: the small-circle path is one lattice, the same everywhere
+            var spots = SweepPath.Fit(0, 0, 160, 120, radius);
+            Assert.Equal(0, Gaps(spots, 0, 0, 160, 120, radius));
+        }
+
+        [Fact]
+        public void Level_1_on_the_whole_field_fits_quickly()
+        {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            var spots = SweepPath.Fit(L, T, R, B, 3.2);
+            Assert.True(sw.Elapsed.TotalSeconds < 3, $"took {sw.Elapsed.TotalSeconds:0.0} s");
+            Assert.InRange(spots.Count, 10000, 400000);
+        }
+
         [Fact]
         public void Tiny_area_still_gets_a_spot()
         {

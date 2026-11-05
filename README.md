@@ -6,7 +6,7 @@ Dirt Sweeper moves your cursor over the whole dig field so every tool gets hover
 
 Website: https://eyyminda.github.io/Dirt-Sweeper/. Unofficial fan-made tool, not affiliated with the developers of Dirt Clicker.
 
-Current version: **0.1.1**. See [CHANGELOG.md](CHANGELOG.md) for what's new.
+Current version: **0.1.2**. See [CHANGELOG.md](CHANGELOG.md) for what's new.
 
 ![Dirt Sweeper over Dirt Clicker: the HUD bar with the settings panel open, and the guides showing the dig field and sweep spots](docs/screenshot.jpg)
 
@@ -28,7 +28,7 @@ The app collects no data; see [Privacy](#privacy).
 - **Follows your upgrades:** the hover circle size comes from your **collision radius** level. Calibrate once, then press **+** when you buy an upgrade.
 - **Plays the timer minigame:** watches the timer, catches the moment each countdown starts and clicks the red button exactly on time, level after level. Flying dirt particles are ignored.
 - **All settings in the overlay:** the gear on the HUD unfolds the settings right over the game. It never takes focus from the game, so you see every change immediately.
-- **Calibrate with the mouse wheel:** press F7 and scroll until the green ring matches the game's hover circle.
+- **Calibrate with the mouse wheel:** press F7, then scroll to set your level until the green ring matches the game's hover circle. Ctrl + scroll fine-tunes the size per level.
 - **Drag the dig field into place** directly over the game, and see the field, the sweep spots and the timer box with the guides (F6).
 - **Stays out of your way:** only sweeps while the game is in front, stops as soon as you move the mouse, and hides when you switch to another app. The mouse passes through the HUD while the app is moving the cursor.
 - **Light on your PC:** almost no CPU when idle; while working it only moves the mouse and looks at a small part of the screen.
@@ -39,8 +39,8 @@ The app collects no data; see [Privacy](#privacy).
 ## How to use it
 
 1. Start Dirt Clicker and `DirtSweeper.exe` (the HUD has a button to launch the game if it isn't running).
-2. Click the gear on the HUD, set **Collision radius level** to your upgrade level.
-3. Press **F7**, move over the dig field and scroll until the green ring matches the game's hover circle. Press **F7** again.
+2. Press **F7** and move over the dig field. A green ring follows the cursor: scroll to set your **collision radius level** (a new game starts at level 1).
+3. If the ring still doesn't match the game's hover circle, hold **Ctrl** and scroll to adjust the size per level. Press **F7** again when it matches. From then on, just raise the level when you buy an upgrade.
 4. Press **F5** to sweep. Move the mouse to stop it.
 5. For the timer minigame, press **F8**, then click **Play** in the game. Every level is played automatically, and sweeping resumes afterwards.
 
@@ -48,7 +48,7 @@ The app collects no data; see [Privacy](#privacy).
 | --- | --- |
 | F5 | Start / stop sweeping |
 | F6 | Show / hide guides |
-| F7 | Calibration ring at the cursor (scroll to resize; Shift = fine, Ctrl = coarse) |
+| F7 | Calibration ring at the cursor: scroll = collision radius level, Ctrl + scroll = size per level, Shift = bigger steps |
 | F8 | Arm / cancel the timer game (then click Play) |
 | F9 | Show / hide the HUD |
 
@@ -64,7 +64,7 @@ Everything is in the settings panel (gear on the HUD, or double-click the tray i
 Tips:
 
 - If some tools get missed, raise **Hold on each spot**. If everything gets hit, you can try lowering it for faster passes.
-- The defaults are tuned for 1920×1080 fullscreen at 144 FPS. Other resolutions and wider screens are scaled automatically.
+- The defaults are a fresh game (collision radius level 1, timer levels 1–3), tuned for 1920×1080 fullscreen at 144 FPS. Other resolutions and wider screens are scaled automatically.
 
 Settings are saved automatically to `%LOCALAPPDATA%\DirtSweeper\settings.json` (General → **Open settings folder** shows it). Versions before 0.1.1 kept them next to the exe; they're moved over on the first start.
 

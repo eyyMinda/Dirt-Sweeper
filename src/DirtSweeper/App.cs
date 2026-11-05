@@ -349,13 +349,16 @@ namespace DirtSweeper
             hudDirty = true;
         }
 
-        // ---------- circle size ----------
-        /// <summary>Changes the circle's diameter by <paramref name="px"/> screen pixels, by adjusting px per level.</summary>
-        void ResizeCircle(int dir, double px)
+        // ---------- circle size (shared by the panel steppers and the calibration wheel; Shift = ×10) ----------
+        void StepLevel(int dir)
         {
-            var lay = Game.Current.Layout;
-            double d = S.Stat * S.PxPerStat + dir * px / lay.Scale;
-            S.PxPerStat = Math.Max(0.05, d / Math.Max(1, S.Stat));
+            S.Stat = Clamp(Math.Round(S.Stat) + dir * (Shift ? 10 : 1), 1, 9999);
+            Changed();
+        }
+
+        void StepPxPerLevel(int dir)
+        {
+            S.PxPerStat = Clamp(Math.Round(S.PxPerStat + dir * (Shift ? 0.1 : 0.01), 3), 0.05, 100);
             Changed();
         }
 
@@ -364,8 +367,10 @@ namespace DirtSweeper
         {
             if (hudShown && hud.Contains(pt)) return hud.HandleWheel(pt, delta);
             if (!calibrating) return false;
-            int notches = Math.Max(1, Math.Abs(delta) / 120) * Math.Sign(delta);
-            ResizeCircle(notches, Shift ? 0.5 : Ctrl ? 10 : 2);
+            // calibrating: scroll = collision radius level, Ctrl + scroll = px per level
+            int notches = Math.Max(1, Math.Abs(delta) / 120);
+            for (int i = 0; i < notches; i++)
+                if (Ctrl) StepPxPerLevel(Math.Sign(delta)); else StepLevel(Math.Sign(delta));
             UpdateRing(pt);
             return true; // don't let the game scroll while calibrating
         }
@@ -445,17 +450,16 @@ namespace DirtSweeper
         {
             double d = SweepPath.CircleDiameter(S, lay);
             p.Section("Hover circle");
-            p.Stepper("stat", "Collision radius level", $"{S.Stat:0}",
-                dir => { S.Stat = Clamp(Math.Round(S.Stat) + dir * (Shift ? 10 : 1), 1, 9999); Changed(); },
-                "your collision radius upgrade level; bump it when you buy one", $"{d:0} px circle");
-            p.Stepper("pps", "Px per level", $"{S.PxPerStat:0.00}",
-                dir => { S.PxPerStat = Clamp(Math.Round(S.PxPerStat + dir * (Shift ? 0.1 : 0.01), 3), 0.05, 100); Changed(); },
-                "circle diameter per level; easiest to set with Calibrate (Shift = ×10)");
+            p.Stepper("stat", "Collision radius level", $"{S.Stat:0}", StepLevel,
+                "your collision radius upgrade level; bump it when you buy one (Shift = ×10)", $"{d:0} px circle");
+            p.Stepper("pps", "Px per level", $"{S.PxPerStat:0.00}", StepPxPerLevel,
+                "circle diameter per level; fine-tune it with Calibrate (Shift = ×10)");
             p.Buttons(B("cal", calibrating ? "Done calibrating  (F7)" : "Calibrate on screen  (F7)", ToggleCalibrate,
-                "shows a green ring at the cursor; scroll over the game to resize it", active: calibrating));
+                "shows a green ring at the cursor; scroll = level, Ctrl + scroll = px per level", active: calibrating));
             if (calibrating)
-                p.Text("Move over the dig field and scroll until the green ring matches the game's hover circle. " +
-                       "Shift + scroll = fine, Ctrl + scroll = coarse. Press F7 when it matches.", Theme.Green);
+                p.Text("Move over the dig field. Scroll to set your collision radius level; if the green ring still doesn't " +
+                       "match the game's hover circle, Ctrl + scroll adjusts px per level. Shift = bigger steps. Press F7 when it matches.",
+                       Theme.Green);
 
             p.Section("Speed");
             double hz = Game.Current.RefreshHz;
@@ -466,7 +470,7 @@ namespace DirtSweeper
                 dir => { S.Spacing = Clamp(S.Spacing + dir * (Shift ? 1 : 5), 30, 100); Changed(); },
                 "share of the circle the spots rely on; lower = more overlap, safer but slower (Shift = 1%)");
             int spots = PreviewCount;
-            p.Info("Full sweep", $"{spots} spots  ·  {spots * Sweeper.HoldSeconds:0.00} s per pass", Theme.Green);
+            p.Info("Full sweep", $"{spots:N0} spots  ·  {SweepPath.Duration(spots * Sweeper.HoldSeconds)} per pass", Theme.Green);
 
             p.Section("Dig field");
             p.Info("Area  (1920×1080 layout)", $"{S.AreaLeft:0}, {S.AreaTop:0}  →  {S.AreaRight:0}, {S.AreaBottom:0}");
@@ -549,7 +553,7 @@ namespace DirtSweeper
             p.Section("Hotkeys");
             p.Info("F5", "start / stop sweeping");
             p.Info("F6", "show / hide guides");
-            p.Info("F7", "calibration ring (scroll to resize)");
+            p.Info("F7", "calibrate: scroll = level, Ctrl + scroll = px/level");
             p.Info("F8", "arm / cancel the timer game");
             p.Info("F9", "show / hide the HUD");
 
@@ -688,7 +692,7 @@ namespace DirtSweeper
             {
                 hud.Dot = Theme.Green;
                 hud.Title = $"Calibrating · {SweepPath.CircleDiameter(S, g.Layout):0} px · F7 to finish";
-                hud.Detail = "scroll over the game until the green ring matches its hover circle";
+                hud.Detail = "scroll = collision radius level · Ctrl + scroll = px per level";
             }
             else if (editingField)
             {
@@ -759,7 +763,8 @@ namespace DirtSweeper
             {
                 var c = cursor ?? Native.CursorPos();
                 if (hudShown && hud.Contains(c)) ring.Set(null, 0, null, Theme.Green);
-                else ring.Set(c, r, $"{2 * r:0} px  ·  scroll to resize  ·  F7 when it matches", Theme.Green);
+                else ring.Set(c, r, (Ctrl ? $"{S.PxPerStat:0.00} px/level" : $"level {S.Stat:0}") +
+                                    $"  ·  {2 * r:0} px  ·  {(Ctrl ? "scroll = px/level" : "scroll = level, Ctrl = px/level")}  ·  F7 done", Theme.Green);
             }
             else if (Sweeper.Running && Sweeper.HasPos && S.ShowGuides)
                 ring.Set(new Point(Sweeper.PosX, Sweeper.PosY), r, null, Theme.Green);
