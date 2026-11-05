@@ -1,6 +1,10 @@
 # npm run build: release build of the current code.
-#   releases\<version>\DirtSweeper-<version>.exe + SHA256SUMS.txt   (local, ignored by git)
-#   dist\DirtSweeper.exe                                             (your everyday copy; settings live next to it)
+#   releases\<version>\DirtSweeper-<version>.exe                     (local, ignored by git)
+#   releases\<version>\DirtSweeper-<version>.zip                     exe + README.txt + LICENSE.txt (Nexus Mods etc.)
+#   releases\<version>\SHA256SUMS.txt                                both of the above
+#   dist\DirtSweeper.exe                                             your everyday copy (settings: %LOCALAPPDATA%\DirtSweeper)
+# For uploads to Nexus etc. prefer the zip attached to the GitHub release: it holds the CI-built exe whose hash the
+# release's SHA256SUMS.txt lists; a local build never has the same hash.
 #   npm run build -- -NoDist   leave dist\ alone
 # If the dist copy was running it is restarted on the new build.
 
@@ -16,12 +20,9 @@ if ($LASTEXITCODE -ne 0) { throw "build failed" }
 $exe = Join-Path $bin "DirtSweeper.exe"
 
 $rel = Join-Path $Root "releases\$version"
-New-Item -ItemType Directory -Force $rel | Out-Null
-$name = "DirtSweeper-$version.exe"
-Copy-Item $exe (Join-Path $rel $name) -Force
-$hash = (Get-FileHash (Join-Path $rel $name) -Algorithm SHA256).Hash.ToLower()
-Set-Content (Join-Path $rel "SHA256SUMS.txt") "$hash  $name" -Encoding ascii
+New-ReleaseFiles $exe $version $rel
 Write-Host "release build $version -> $rel" -ForegroundColor Green
+Get-ChildItem $rel | Format-Table Name, @{ Name = "KB"; Expression = { [math]::Round($_.Length / 1KB) } } -AutoSize | Out-Host
 
 if (-not $NoDist) {
     $dist = Join-Path $Root "dist"

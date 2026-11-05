@@ -38,11 +38,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          New-Item -ItemType Directory release | Out-Null
+          # DirtSweeper-<v>.exe, DirtSweeper-<v>.zip (exe + README.txt + LICENSE.txt) and SHA256SUMS.txt, same as npm run build
+          . ./scripts/common.ps1
+          New-ReleaseFiles (Resolve-Path src/DirtSweeper/bin/Release/net48/DirtSweeper.exe).Path $env:VERSION (Join-Path $PWD release)
           $exe = "DirtSweeper-$env:VERSION.exe"
-          Copy-Item src/DirtSweeper/bin/Release/net48/DirtSweeper.exe "release/$exe"
-          $hash = (Get-FileHash "release/$exe" -Algorithm SHA256).Hash.ToLower()
-          Set-Content release/SHA256SUMS.txt "$hash  $exe" -Encoding ascii
+          $zip = "DirtSweeper-$env:VERSION.zip"
 
           # Release notes: every CHANGELOG.md section newer than the previous release (so versions that were never
           # released on their own are included). On release/* branches this is just the fix.
@@ -63,7 +63,7 @@ jobs:
           $notes = @($sections) + @(
             "",
             "---",
-            "**Download:** ``$exe``: a single exe (about 100 KB), no installer. Runs on any Windows 10/11 PC with the built-in .NET Framework 4.8.",
+            "**Download:** ``$exe``: a single exe (about 100 KB), no installer. Runs on any Windows 10/11 PC with the built-in .NET Framework 4.8. ``$zip`` is the same exe with a short README and the license.",
             "",
             "Windows may show a SmartScreen warning for this unsigned exe; choose **More info**, then **Run anyway**. Verify the download against ``SHA256SUMS.txt``."
           )
