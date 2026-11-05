@@ -22,8 +22,18 @@ jobs:
       - name: Test
         run: dotnet test tests/DirtSweeper.Tests -c Release --no-build
 
-      # the exe of every build, for trying a branch without a release
+      # the same packaging step as release.yml, so a broken release is caught on the PR, not on the tag
+      - name: Package (as a release would)
+        shell: pwsh
+        run: |
+          $version = ([xml](Get-Content src/DirtSweeper/DirtSweeper.csproj)).Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1
+          . ./scripts/common.ps1
+          New-ReleaseFiles (Resolve-Path src/DirtSweeper/bin/Release/net48/DirtSweeper.exe).Path $version (Join-Path $PWD release)
+          Get-ChildItem release | Format-Table Name, Length -AutoSize
+          Get-Content release/SHA256SUMS.txt
+
+      # the exe, zip and checksums of every build, for trying a branch without a release
       - uses: actions/upload-artifact@v4
         with:
           name: DirtSweeper-${{ github.sha }}
-          path: src/DirtSweeper/bin/Release/net48/DirtSweeper.exe
+          path: release/*
