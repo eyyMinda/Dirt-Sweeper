@@ -10,6 +10,10 @@ namespace DirtSweeper
     {
         public static double CircleDiameter(Settings s, GameLayout lay) => lay.Px(s.Stat * s.PxPerStat);
 
+        /// <summary>"0.42 s", "41 s", "25.7 min".</summary>
+        public static string Duration(double seconds) =>
+            seconds < 10 ? $"{seconds:0.00} s" : seconds < 120 ? $"{seconds:0} s" : $"{seconds / 60:0.0} min";
+
         /// <summary>Play area in screen pixels (inclusive edges), kept on the game's monitor.</summary>
         public static RectangleF Area(Settings s, GameLayout lay)
         {
@@ -69,6 +73,14 @@ namespace DirtSweeper
 
         internal static List<Point> Fit(double L, double T, double R, double B, double r)
         {
+            // Small circles (low collision radius levels) need thousands of spots, where the search below would take
+            // seconds to minutes. A hex lattice whose spots are pulled onto the area covers everything within its radius
+            // by construction (pulling a spot towards the area only brings it closer to every point of the area), so
+            // one lattice spaced for r minus the pixel-rounding error needs no check. Big circles are where the search
+            // pays off (a few spots more or less per pass).
+            if ((R - L + 1) * (B - T + 1) / (2.598 * r * r) > 600)
+                return Order(Hex(L, T, R, B, Math.Max(1, r - 0.75), 0, 0, false, dedupe: false));
+
             var check = new CoverageCheck(L, T, R, B, r);
             List<PointF> best = null;
             int bestCount = int.MaxValue;
@@ -131,7 +143,7 @@ namespace DirtSweeper
         }
 
         /// <summary>Hex lattice spots whose circle reaches the area, pulled onto the area where outside.</summary>
-        static List<PointF> Hex(double L, double T, double R, double B, double r, double phx, double phy, bool vertical)
+        static List<PointF> Hex(double L, double T, double R, double B, double r, double phx, double phy, bool vertical, bool dedupe = true)
         {
             if (vertical) { (L, T) = (T, L); (R, B) = (B, R); }
             double dx = Math.Sqrt(3) * r, dy = 1.5 * r, ox = L + phx * dx, oy = T + phy * dy;
@@ -148,7 +160,7 @@ namespace DirtSweeper
                     double nx = Math.Min(Math.Max(x, L), R), ny = Math.Min(Math.Max(y, T), B);
                     if ((x - nx) * (x - nx) + (y - ny) * (y - ny) > r * r) continue;
                     var p = vertical ? new PointF((float)ny, (float)nx) : new PointF((float)nx, (float)ny);
-                    if (last != null && Math.Abs(last.Value.X - p.X) + Math.Abs(last.Value.Y - p.Y) < 2) continue;
+                    if (dedupe && last != null && Math.Abs(last.Value.X - p.X) + Math.Abs(last.Value.Y - p.Y) < 2) continue;
                     pts.Add(p);
                     last = p;
                 }
@@ -332,7 +344,7 @@ namespace DirtSweeper
                 if (Clock.Now - next > 0.1) next = Clock.Now; // fell behind (system hiccup): resync
             }
             Passes++;
-            Note = $"{path.Count} spots · {path.Count * hold:0.00} s per sweep";
+            Note = $"{path.Count:N0} spots · {SweepPath.Duration(path.Count * hold)} per sweep";
             return true;
         }
     }

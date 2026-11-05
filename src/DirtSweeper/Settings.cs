@@ -48,8 +48,8 @@ namespace DirtSweeper
             GameProcess = "Dirt Clicker"; GamePath = "";
             OnlyWhenFocused = true; ShowHud = true; HudFx = 0.006; HudFy = 0.945; ShowGuides = false; Tab = 0;
             CheckUpdates = true; LastUpdateCheck = 0;
-            // tuned on 1920x1080 borderless fullscreen at 144 FPS
-            Stat = 56; PxPerStat = 6.44; Spacing = 100; HoldMs = 15;
+            // a fresh game: collision radius level 1, timer levels 1-3. px/level and hold tuned on 1920x1080 at 144 FPS
+            Stat = 1; PxPerStat = 6.4; Spacing = 100; HoldMs = 15;
             AreaLeft = 0; AreaTop = 0; AreaRight = 1485; AreaBottom = 1080;
             Shift = true; PingPong = true; PauseOnMouse = true;
             TimerX = 1632; TimerY = 312; TimerW = 180; TimerH = 66; ButtonX = 1809; ButtonY = 306;

@@ -3,6 +3,20 @@
 All notable changes to Dirt Sweeper are documented here.
 Versions follow `MAJOR.MINOR.PATCH`; every release bumps at least the patch number.
 
+## [0.1.2] - 2026-11-05
+
+_Updated by [eyyMinda](https://github.com/eyyMinda)._
+
+### Changed
+
+- **Calibration (F7):** scrolling now sets the collision radius level; Ctrl + scroll adjusts the size per level; Shift for steps of 10.
+- **Defaults are a fresh game:** collision radius level 1 and timer levels 1–3, with 6.4 px per level and 15 ms per spot. Players further along just raise the level once.
+
+### Fixed
+
+- **Safer timer clicks:** the cursor is put back on the red button just before each click (and checked again right before pressing), so a nudged mouse can no longer make a click miss. The log notes when it had to.
+- Small hover circles (low levels) no longer freeze the settings panel while the sweep path is worked out, and the guides just tint the field when there are thousands of spots. Long passes show in minutes.
+
 ## [0.1.1] - 2026-11-05
 
 _Updated by [eyyMinda](https://github.com/eyyMinda)._

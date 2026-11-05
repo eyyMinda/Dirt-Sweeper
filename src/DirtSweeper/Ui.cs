@@ -696,24 +696,30 @@ namespace DirtSweeper
 
             if (s.ShowStatic || s.Editing)
             {
-                // spots: translucent discs, so overlaps look darker and any gap would show up clearly
-                using (var fill = new SolidBrush(Theme.A(Theme.Blue, s.Editing ? 14 : 22)))
-                using (var ring = new Pen(Theme.A(Theme.Blue, 110), 1.2f))
-                    foreach (var p in s.Path)
-                    {
-                        g.FillEllipse(fill, p.X - s.Radius, p.Y - s.Radius, 2 * s.Radius, 2 * s.Radius);
-                        g.DrawEllipse(ring, p.X - s.Radius, p.Y - s.Radius, 2 * s.Radius, 2 * s.Radius);
-                    }
-                if (s.Path.Count > 1)
-                    using (var pen = new Pen(Theme.A(Theme.Accent, 150), 1.5f) { LineJoin = LineJoin.Round })
-                        g.DrawLines(pen, s.Path.ToArray());
-                using (var b = new SolidBrush(Theme.Accent))
-                using (var o = new Pen(Color.FromArgb(200, 0, 0, 0), 1))
-                    foreach (var p in s.Path)
-                    {
-                        g.FillEllipse(b, p.X - 3.5f, p.Y - 3.5f, 7, 7);
-                        g.DrawEllipse(o, p.X - 3.5f, p.Y - 3.5f, 7, 7);
-                    }
+                // tiny circles (low levels) mean tens of thousands of spots: then just tint the swept area
+                if (s.Path.Count > 2500)
+                    using (var b = new SolidBrush(Theme.A(Theme.Blue, 26))) g.FillRectangle(b, s.Area);
+                else
+                {
+                    // spots: translucent discs, so overlaps look darker and any gap would show up clearly
+                    using (var fill = new SolidBrush(Theme.A(Theme.Blue, s.Editing ? 14 : 22)))
+                    using (var ring = new Pen(Theme.A(Theme.Blue, 110), 1.2f))
+                        foreach (var p in s.Path)
+                        {
+                            g.FillEllipse(fill, p.X - s.Radius, p.Y - s.Radius, 2 * s.Radius, 2 * s.Radius);
+                            g.DrawEllipse(ring, p.X - s.Radius, p.Y - s.Radius, 2 * s.Radius, 2 * s.Radius);
+                        }
+                    if (s.Path.Count > 1)
+                        using (var pen = new Pen(Theme.A(Theme.Accent, 150), 1.5f) { LineJoin = LineJoin.Round })
+                            g.DrawLines(pen, s.Path.ToArray());
+                    using (var b = new SolidBrush(Theme.Accent))
+                    using (var o = new Pen(Color.FromArgb(200, 0, 0, 0), 1))
+                        foreach (var p in s.Path)
+                        {
+                            g.FillEllipse(b, p.X - 3.5f, p.Y - 3.5f, 7, 7);
+                            g.DrawEllipse(o, p.X - 3.5f, p.Y - 3.5f, 7, 7);
+                        }
+                }
 
                 // timer box (drawn outside the box so it never covers the digits) and button crosshair
                 using (var pen = new Pen(Theme.Red, 2))
