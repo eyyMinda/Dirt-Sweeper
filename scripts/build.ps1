@@ -3,8 +3,8 @@
 #   releases\<version>\DirtSweeper-<version>.zip                     exe + README.txt + LICENSE.txt (Nexus Mods etc.)
 #   releases\<version>\SHA256SUMS.txt                                both of the above
 #   dist\DirtSweeper.exe                                             your everyday copy (settings: %LOCALAPPDATA%\DirtSweeper)
-# For uploads to Nexus etc. prefer the zip attached to the GitHub release: it holds the CI-built exe whose hash the
-# release's SHA256SUMS.txt lists; a local build never has the same hash.
+# The build is deterministic: the same commit gives a byte-identical exe here and in CI (checked for 0.1.2), so the exe
+# matches the release's SHA256SUMS.txt. The zip's own hash differs per build (zips store file times).
 #   npm run build -- -NoDist   leave dist\ alone
 # If the dist copy was running it is restarted on the new build.
 
