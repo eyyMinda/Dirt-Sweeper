@@ -36,6 +36,10 @@ namespace DirtSweeper
         CancellationTokenSource mgCts;
         bool resumeAfterMinigame;
         readonly List<string> log = new List<string>();
+        ReleaseInfo latest;
+        string updateStatus = "";
+        bool checkingUpdate, installingUpdate, updateNotified;
+        double nextUpdateCheck;
         readonly EventWaitHandle showSignal = new EventWaitHandle(false, EventResetMode.AutoReset, ShowSignalName);
 
         public App()
@@ -77,6 +81,11 @@ namespace DirtSweeper
             tray.DoubleClick += (_, __) => OpenPanel();
 
             ThreadPool.RegisterWaitForSingleObject(showSignal, (_, __) => hud.BeginInvoke((MethodInvoker)OpenPanel), null, -1, false);
+
+            Updates.CleanUp(); // the previous exe, if we were just updated
+            if (Settings.LoadProblem != null) lastNote = Settings.LoadProblem;
+            else if (Settings.MigratedFrom != null) lastNote = "settings moved to " + Settings.FilePath;
+            nextUpdateCheck = Clock.Now + 5; // first check shortly after startup, then daily
 
             tick.Tick += (_, __) => Tick();
             tick.Start();
@@ -176,6 +185,74 @@ namespace DirtSweeper
                     hudDirty = true;
                 }));
             }) { IsBackground = true, Name = mg.Name }.Start();
+        }
+
+        // ---------- updates ----------
+        void CheckForUpdates(bool manual)
+        {
+            if (checkingUpdate || installingUpdate) return;
+            checkingUpdate = true;
+            if (manual) updateStatus = "checking…";
+            hudDirty = true;
+            new Thread(() =>
+            {
+                ReleaseInfo r = null;
+                string error = null;
+                try { r = Updates.FetchLatest(); }
+                catch (Exception ex) { error = ex.Message; }
+                hud.BeginInvoke((MethodInvoker)(() =>
+                {
+                    checkingUpdate = false;
+                    S.LastUpdateCheck = DateTime.UtcNow.Ticks;
+                    if (error != null) { if (manual) updateStatus = error; }
+                    else
+                    {
+                        latest = r;
+                        updateStatus = r == null ? "no release published yet"
+                            : r.IsNewer ? $"version {r.Version.ToString(3)} is available"
+                            : "you have the latest version";
+                        if (r != null && r.IsNewer && !updateNotified)
+                        {
+                            updateNotified = true;
+                            tray.ShowBalloonTip(6000, $"Dirt Sweeper {r.Version.ToString(3)} is available",
+                                "Open the settings (gear on the HUD), then About, to update in one click.", ToolTipIcon.Info);
+                        }
+                    }
+                    Changed();
+                }));
+            }) { IsBackground = true, Name = "update check" }.Start();
+        }
+
+        void InstallUpdate()
+        {
+            if (latest == null || !latest.IsNewer || installingUpdate) return;
+            if (!latest.CanInstall) { AppInfo.Open(latest.PageUrl); return; }
+            installingUpdate = true;
+            Sweeper.Stop("stopped to update");
+            mgCts?.Cancel();
+            updateStatus = $"downloading {latest.Version.ToString(3)}…";
+            hudDirty = true;
+            var release = latest;
+            new Thread(() =>
+            {
+                string error = null;
+                try { Updates.Install(release); }
+                catch (Exception ex) { error = ex.Message; }
+                hud.BeginInvoke((MethodInvoker)(() =>
+                {
+                    if (error != null)
+                    {
+                        installingUpdate = false;
+                        updateStatus = error;
+                        hudDirty = true;
+                        return;
+                    }
+                    updateStatus = "restarting…";
+                    S.Save();
+                    Updates.Restart();
+                    Exit();
+                }));
+            }) { IsBackground = true, Name = "update install" }.Start();
         }
 
         void StartPick(string what)
@@ -351,12 +428,13 @@ namespace DirtSweeper
         void BuildPanel(PanelBuilder p)
         {
             var lay = Game.Current.Layout;
-            p.Tabs(new[] { "Sweeper", "Timer game", "General" }, S.Tab, i => { S.Tab = i; Changed(); });
+            p.Tabs(new[] { "Sweeper", "Timer game", "General", "About" }, S.Tab, i => { S.Tab = i; Changed(); });
             switch (S.Tab)
             {
                 case 0: SweeperTab(p, lay); break;
                 case 1: TimerTab(p); break;
-                default: GeneralTab(p); break;
+                case 2: GeneralTab(p); break;
+                default: AboutTab(p); break;
             }
         }
 
@@ -481,7 +559,56 @@ namespace DirtSweeper
                 B("reset", confirm ? "Click again to reset" : "Reset all settings", ResetSettings,
                     "puts every setting back to its default (keeps the HUD position)", active: confirm, activeColor: Theme.Red),
                 B("exit", "Exit Dirt Sweeper", Exit, "closes the app"));
-            p.Text($"Dirt Sweeper {Application.ProductVersion}  ·  {Settings.FilePath}");
+            p.Buttons(B("folder", "Open settings folder", OpenSettingsFolder,
+                "shows settings.json in Explorer; delete that folder to remove every trace of Dirt Sweeper"));
+            p.Text("Settings file: " + Settings.FilePath);
+        }
+
+        void OpenSettingsFolder()
+        {
+            if (!File.Exists(Settings.FilePath)) S.Save();
+            try { Process.Start("explorer.exe", "/select,\"" + Settings.FilePath + "\""); }
+            catch (Exception) { AppInfo.Open(Path.GetDirectoryName(Settings.FilePath)); }
+        }
+
+        void AboutTab(PanelBuilder p)
+        {
+            p.Section("Dirt Sweeper");
+            p.Info("Version", AppInfo.VersionText);
+            p.Text("Sweeps the Dirt Clicker dig field and plays the timer minigame for you. Unofficial fan-made tool, " +
+                   "not affiliated with the developers of Dirt Clicker. Free and open source (GPL-3.0).");
+
+            p.Section("Updates");
+            bool newer = latest != null && latest.IsNewer;
+            string last = S.LastUpdateCheck > 0 ? new DateTime(S.LastUpdateCheck, DateTimeKind.Utc).ToLocalTime().ToString("g") : "never";
+            p.Info("Status", updateStatus != "" ? updateStatus : "last checked: " + last, newer ? Theme.Blue : (Color?)null);
+            if (newer)
+                p.Buttons(
+                    B("install", installingUpdate ? "Updating…" : $"Update to {latest.Version.ToString(3)}", InstallUpdate,
+                        latest.CanInstall ? "downloads the new exe, checks it and restarts Dirt Sweeper" : "opens the download page",
+                        primary: !installingUpdate, active: installingUpdate, activeColor: Theme.Blue),
+                    B("notes", "What's new", () => AppInfo.Open(latest.PageUrl), "opens the release notes on GitHub"));
+            else
+                p.Buttons(B("check", checkingUpdate ? "Checking…" : "Check for updates", () => CheckForUpdates(true),
+                    "asks GitHub for the latest release", active: checkingUpdate, activeColor: Theme.Blue));
+            p.Toggle("autoupd", "Check for updates automatically", S.CheckUpdates, () => { S.CheckUpdates = !S.CheckUpdates; Changed(); },
+                "at startup and once a day; the only time Dirt Sweeper goes online");
+
+            p.Section("Feedback");
+            p.Text("Found a bug, or have an idea for a feature? Open an issue on GitHub. Every report helps make Dirt Sweeper better.",
+                Theme.Text);
+            p.Buttons(B("issue", "Report a bug or request a feature", () => AppInfo.Open(AppInfo.IssuesUrl),
+                "opens GitHub issues in your browser", icon: Icons.GitHub));
+
+            p.Section("Links");
+            p.Buttons(
+                B("github", "GitHub", () => AppInfo.Open(AppInfo.RepoUrl), "source code, releases and the changelog", icon: Icons.GitHub),
+                B("coffee", "Buy me a coffee", () => AppInfo.Open(AppInfo.BuyMeACoffeeUrl), "support development, thank you!",
+                    icon: (g, r, c) => Icons.Coffee(g, r, c)));
+            p.Buttons(
+                B("website", "Website", () => AppInfo.Open(AppInfo.WebsiteUrl), "eyyminda.github.io/Dirt-Sweeper",
+                    icon: (g, r, c) => Theme.Draw(g, Glyph.Globe, Theme.Icons, c, RectangleF.Inflate(r, 3, 3), StringAlignment.Center)),
+                B("author", "eyyMinda", () => AppInfo.Open(AppInfo.AuthorUrl), "the author on GitHub", icon: Icons.GitHub));
         }
 
         // ---------- main loop (UI thread) ----------
@@ -496,6 +623,11 @@ namespace DirtSweeper
             }
             var g = Game.Current;
             if (pickWhat != null && now >= pickDeadline) FinishPick();
+            if (now >= nextUpdateCheck)
+            {
+                nextUpdateCheck = now + 24 * 3600;
+                if (S.CheckUpdates) CheckForUpdates(false);
+            }
 
             while (timerGame.LogLines.TryDequeue(out var line))
             {
@@ -515,7 +647,11 @@ namespace DirtSweeper
             hook.Set(gameContext && !Busy && (calibrating || editingField || (hudShown && hud.PanelOpen)));
             tick.Interval = calibrating || editingField || (Sweeper.Running && S.ShowGuides) ? 15 : 50;
 
-            if (now >= saveAt) { S.Save(); saveAt = double.MaxValue; }
+            if (now >= saveAt)
+            {
+                saveAt = double.MaxValue;
+                if (!S.Save()) { lastNote = "couldn't save settings to " + Settings.FilePath; hudDirty = true; }
+            }
         }
 
         void UpdateHud(GameState g, bool gameContext, double now)
@@ -527,6 +663,8 @@ namespace DirtSweeper
             btnTimer.Active = MinigameActive;
             btnGuides.Active = S.ShowGuides;
             btnPanel.Active = hud.PanelOpen;
+            bool updateReady = latest != null && latest.IsNewer;
+            btnPanel.Badge = updateReady;
 
             if (pickWhat != null)
             {
@@ -563,6 +701,11 @@ namespace DirtSweeper
                 hud.Dot = g.Found ? Theme.Sub : Theme.Yellow;
                 hud.Title = g.Found ? "Ready" : "Game not running";
                 string note = Sweeper.Note != "" && lastNote == "" ? Sweeper.Note : lastNote;
+                if (note == "" && updateReady)
+                {
+                    hud.Dot = Theme.Blue;
+                    note = installingUpdate ? updateStatus : $"update {latest.Version.ToString(3)} available · gear → About";
+                }
                 hud.Detail = note != "" ? note : g.Found ? "F5 sweep · F8 timer game · F6 guides · F7 calibrate" : "start Dirt Clicker, or click the controller icon";
             }
 

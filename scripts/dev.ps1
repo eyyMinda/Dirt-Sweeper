@@ -1,8 +1,9 @@
 # npm run dev: builds the current code into bin\dev and runs it.
-#   npm run dev               build + run (your real settings are copied in the first time)
+#   npm run dev               build + run (with its own settings file, a copy of your real settings the first time)
 #   npm run dev -- -Fresh     start the dev copy from default settings
 #   npm run dev -- -NoRun     only build
 # Dirt Sweeper is single-instance, so a running copy (dev or dist) is closed before launching; -NoRun leaves dist alone.
+# The dev copy runs with --settings bin\dev\settings.json, so it never touches %LOCALAPPDATA%\DirtSweeper\settings.json.
 
 param([switch]$Fresh, [switch]$NoRun)
 
@@ -16,13 +17,12 @@ Stop-DirtSweeper $exe | Out-Null   # the old dev exe is locked while it runs
 dotnet build $Project -c Debug -nologo -v q -o $out | Out-Host
 if ($LASTEXITCODE -ne 0) { throw "build failed" }
 
-$devSettings = Join-Path $out $SettingsName
-$realSettings = Join-Path $Root "dist\$SettingsName"
+$devSettings = Join-Path $out "settings.json"
 if ($Fresh -and (Test-Path $devSettings)) { Remove-Item $devSettings }
-elseif (-not (Test-Path $devSettings) -and (Test-Path $realSettings)) { Copy-Item $realSettings $devSettings }
+elseif (-not (Test-Path $devSettings) -and (Test-Path $RealSettings)) { Copy-Item $RealSettings $devSettings }
 
 Write-Host "dev build $(Get-Version) -> $out" -ForegroundColor Green
 if (-not $NoRun) {
     Stop-DirtSweeper | Out-Null    # single-instance: a running dist copy would swallow the launch
-    Start-Process $exe -WorkingDirectory $out
+    Start-Process $exe -ArgumentList "--settings", "`"$devSettings`"" -WorkingDirectory $out
 }

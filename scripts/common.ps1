@@ -2,7 +2,8 @@
 
 $Root = Split-Path -Parent $PSScriptRoot
 $Project = Join-Path $Root "src\DirtSweeper\DirtSweeper.csproj"
-$SettingsName = "DirtSweeper.settings.json"
+# the real settings, used by the installed/dist copy (dev builds use bin\dev\settings.json)
+$RealSettings = Join-Path $env:LOCALAPPDATA "DirtSweeper\settings.json"
 
 # <Version> in the csproj is the single source of truth for the app version.
 function Get-Version {

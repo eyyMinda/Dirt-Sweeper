@@ -21,7 +21,7 @@ namespace DirtSweeper.Tests
             var s = Read("{\"Stat\":40,\"PxPerStat\":6.6,\"HoldFrames\":2,\"FpsOverride\":0,\"Columns\":false,\"AreaRight\":1485}");
             Assert.Equal(40, s.Stat);
             Assert.Equal(1485, s.AreaRight);
-            Assert.Equal(35, s.HoldMs);
+            Assert.Equal(15, s.HoldMs);
             Assert.Equal("1,2,3", s.Levels);
         }
 
@@ -30,8 +30,8 @@ namespace DirtSweeper.Tests
         {
             var s = new Settings();
             Assert.Equal(56, s.Stat);
-            Assert.Equal(6.6, s.PxPerStat);
-            Assert.Equal(35, s.HoldMs);
+            Assert.Equal(6.44, s.PxPerStat);
+            Assert.Equal(15, s.HoldMs);
             Assert.Equal(new[] { 0.0, 0, 1485, 1080 }, new[] { s.AreaLeft, s.AreaTop, s.AreaRight, s.AreaBottom });
         }
 
