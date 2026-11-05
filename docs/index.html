@@ -259,7 +259,7 @@
     <div class="grid">
       <div class="card">
         <h3>Covers the whole field</h3>
-        <p>Every layout is checked for full coverage before it's used, so nothing is missed. About one second per pass at collision radius 56.</p>
+        <p>Every layout is checked for full coverage before it's used, so nothing is missed. Less than half a second per pass at collision radius 56.</p>
       </div>
       <div class="card">
         <h3>Follows your upgrades</h3>
@@ -276,6 +276,10 @@
       <div class="card">
         <h3>Easy calibration</h3>
         <p>Press F7 and scroll until the green ring matches the game's hover circle. Drag the dig field into place on screen.</p>
+      </div>
+      <div class="card">
+        <h3>Updates in one click</h3>
+        <p>Tells you when a new version is out and installs it from the About tab, checked against the release's checksums.</p>
       </div>
       <div class="card">
         <h3>Stays out of your way</h3>
@@ -322,16 +326,24 @@
       <p>Yes. Positions are scaled to the game window, and on screens wider than 16:9 the extra width goes to the dig field. The defaults are tuned for 1920×1080 fullscreen.</p>
     </details>
     <details>
+      <summary>I found a bug or have an idea.</summary>
+      <p>Please <a href="https://github.com/eyyMinda/Dirt-Sweeper/issues/new/choose">open an issue on GitHub</a> (there's a button for it in the app's About tab too). Every report helps make Dirt Sweeper better.</p>
+    </details>
+    <details>
       <summary>How do I stop or close it?</summary>
       <p>Move the mouse or press F5 to stop sweeping. Close it with the ✕ on the HUD, or from the tray icon.</p>
     </details>
+    <details>
+      <summary>How do I remove it completely?</summary>
+      <p>Close it, delete the exe, and delete the folder <code>%LOCALAPPDATA%\DirtSweeper</code> where its settings are saved (paste that into the Explorer address bar, or use <b>Open settings folder</b> in the General tab). That's everything: it installs nothing else, adds no startup entries and doesn't touch the registry or the game.</p>
+    </details>
 
     <h2 id="privacy">Privacy</h2>
-    <p>Dirt Sweeper collects no data and has no accounts, analytics or telemetry. It makes no network connections at all. Your settings stay in a file next to the exe. Every release is built by GitHub Actions from the public source and lists the SHA-256 of its exe in <code>SHA256SUMS.txt</code>.</p>
+    <p>Dirt Sweeper collects no data and has no accounts, analytics or telemetry. The only time it goes online is to ask GitHub for the latest release (at startup and once a day, which you can turn off in About) and to download an update when you click <b>Update</b>. Your settings stay on your PC in <code>%LOCALAPPDATA%\DirtSweeper</code>. Every release is built by GitHub Actions from the public source and lists the SHA-256 of its exe in <code>SHA256SUMS.txt</code>.</p>
   </main>
 
   <footer>
-    <p>Dirt Sweeper by <a href="https://github.com/eyyMinda">eyyMinda</a> · <a href="https://github.com/eyyMinda/Dirt-Sweeper/blob/main/CHANGELOG.md">Changelog</a> · GPL-3.0<br>Unofficial fan-made tool. Not affiliated with or endorsed by the developers of Dirt Clicker.</p>
+    <p>Dirt Sweeper by <a href="https://github.com/eyyMinda">eyyMinda</a> · <a href="https://github.com/eyyMinda/Dirt-Sweeper/blob/main/CHANGELOG.md">Changelog</a> · <a href="https://github.com/eyyMinda/Dirt-Sweeper/issues/new/choose">Report an issue</a> · <a href="https://buymeacoffee.com/eyyminda">Buy me a coffee</a> · GPL-3.0<br>Unofficial fan-made tool. Not affiliated with or endorsed by the developers of Dirt Clicker.</p>
   </footer>
 
   <script>

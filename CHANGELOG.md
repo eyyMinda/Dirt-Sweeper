@@ -3,6 +3,24 @@
 All notable changes to Dirt Sweeper are documented here.
 Versions follow `MAJOR.MINOR.PATCH`; every release bumps at least the patch number.
 
+## [0.1.1] - 2026-11-05
+
+_Updated by [eyyMinda](https://github.com/eyyMinda)._
+
+### Added
+
+- **Updates in one click.** Dirt Sweeper checks GitHub for a new version at startup and once a day (optional). When there is one, the gear on the HUD gets a blue dot, the bar says so, and a notification pops up; **Update to x.y.z** in the new About tab downloads it, checks it against the release's `SHA256SUMS.txt`, swaps it in and restarts. **Check for updates** checks right away.
+- **About tab**: version, updates, a quick way to report a bug or request a feature on GitHub, and links to GitHub, the website and Buy me a coffee.
+- Bug report and feature request forms on GitHub issues.
+- **Open settings folder** in the General tab.
+
+### Changed
+
+- **Settings are saved in `%LOCALAPPDATA%\DirtSweeper\settings.json`** instead of next to the exe, so they survive moving or re-downloading the exe. Your old settings file is moved there on the first start. To remove Dirt Sweeper completely, delete the exe and that folder.
+- Settings are written safely (a crash can't leave a half-written file), and a file that can't be read is kept as `settings.broken.json` instead of being overwritten.
+- New defaults: px per level 6.44 and hold 15 ms per spot. At collision radius 56 a pass now takes less than half a second.
+- Dirt Sweeper now goes online only to check GitHub for updates; turn it off in About.
+
 ## [0.1.0] - 2026-11-05
 
 _Updated by [eyyMinda](https://github.com/eyyMinda)._
