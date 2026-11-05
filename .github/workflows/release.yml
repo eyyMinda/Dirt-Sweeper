@@ -1,0 +1,81 @@
+name: Release
+
+# Push a tag matching <Version> in src/DirtSweeper/DirtSweeper.csproj to publish a release (npm run release does
+# the checks and pushes it). Works from main and from maintenance branches (release/N.x): the tag's commit is built.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    env:
+      TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Check tag matches project version
+        shell: pwsh
+        run: |
+          $version = ([xml](Get-Content src/DirtSweeper/DirtSweeper.csproj)).Project.PropertyGroup.Version | Where-Object { $_ } | Select-Object -First 1
+          if ("v$version" -ne $env:TAG) { throw "Tag $env:TAG doesn't match the project version $version." }
+          "VERSION=$version" >> $env:GITHUB_ENV
+
+      - name: Build and test
+        run: |
+          dotnet build DirtSweeper.sln -c Release
+          dotnet test tests/DirtSweeper.Tests -c Release --no-build
+
+      - name: Package and write release notes
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          New-Item -ItemType Directory release | Out-Null
+          $exe = "DirtSweeper-$env:VERSION.exe"
+          Copy-Item src/DirtSweeper/bin/Release/net48/DirtSweeper.exe "release/$exe"
+          $hash = (Get-FileHash "release/$exe" -Algorithm SHA256).Hash.ToLower()
+          Set-Content release/SHA256SUMS.txt "$hash  $exe" -Encoding ascii
+
+          # Release notes: every CHANGELOG.md section newer than the previous release (so versions that were never
+          # released on their own are included). On release/* branches this is just the fix.
+          $current = [version]$env:VERSION
+          $previous = gh release list --limit 100 --json tagName --jq '.[].tagName' |
+            Where-Object { $_ -match '^v\d+\.\d+\.\d+$' } | ForEach-Object { [version]$_.Substring(1) } |
+            Where-Object { $_ -lt $current } | Sort-Object -Descending | Select-Object -First 1
+          $sections = New-Object System.Collections.Generic.List[string]
+          $include = $false
+          foreach ($line in Get-Content CHANGELOG.md) {
+            if ($line -match '^## \[(\d+\.\d+\.\d+)\]') {
+              $version = [version]$Matches[1]
+              $include = $version -le $current -and ($null -eq $previous -or $version -gt $previous)
+            }
+            if ($include) { $sections.Add($line) }
+          }
+          if (-not ($sections | Where-Object { $_ -like "## ``[$env:VERSION``]*" })) { throw "CHANGELOG.md has no section for $env:VERSION." }
+          $notes = @($sections) + @(
+            "",
+            "---",
+            "**Download:** ``$exe``: a single exe (about 100 KB), no installer. Runs on any Windows 10/11 PC with the built-in .NET Framework 4.8.",
+            "",
+            "Windows may show a SmartScreen warning for this unsigned exe; choose **More info**, then **Run anyway**. Verify the download against ``SHA256SUMS.txt``."
+          )
+          Set-Content notes.md $notes -Encoding utf8
+
+      - name: Create GitHub Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Only the highest version becomes "Latest", so a fix from a release/* branch doesn't replace the newest version.
+          $released = gh release list --limit 100 --json tagName --jq '.[].tagName' |
+            Where-Object { $_ -match '^v\d+\.\d+\.\d+$' } | ForEach-Object { [version]$_.Substring(1) }
+          $isLatest = -not ($released | Where-Object { $_ -gt [version]$env:VERSION })
+          gh release create $env:TAG release/* --title "Dirt Sweeper $env:VERSION" --notes-file notes.md "--latest=$($isLatest.ToString().ToLower())"

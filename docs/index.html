@@ -1,0 +1,354 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dirt Sweeper – auto sweeper and timer helper for Dirt Clicker</title>
+  <meta name="description" content="Free, open-source Windows overlay for the Steam game Dirt Clicker. Sweeps the cursor over the whole dig field with no gaps, plays the red-button timer minigame by itself, and keeps every setting in a HUD over the game.">
+  <link rel="canonical" href="https://eyyminda.github.io/Dirt-Sweeper/">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Dirt Sweeper – auto sweeper and timer helper for Dirt Clicker">
+  <meta property="og:description" content="Sweeps the whole dig field, plays the timer minigame and keeps all settings in an overlay over the game. Free for Windows 10 and 11.">
+  <meta property="og:url" content="https://eyyminda.github.io/Dirt-Sweeper/">
+  <meta property="og:image" content="https://eyyminda.github.io/Dirt-Sweeper/screenshot.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ff6a1a' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Ccircle cx='12' cy='12' r='2.5' fill='%23ff6a1a'/%3E%3C/svg%3E">
+  <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Dirt Sweeper",
+  "description": "Overlay for the Steam game Dirt Clicker that sweeps the cursor over the dig field and plays the red-button timer minigame.",
+  "operatingSystem": "Windows 10, Windows 11",
+  "applicationCategory": "GameApplication",
+  "license": "https://www.gnu.org/licenses/gpl-3.0.html",
+  "url": "https://eyyminda.github.io/Dirt-Sweeper/",
+  "downloadUrl": "https://github.com/eyyMinda/Dirt-Sweeper/releases/latest",
+  "screenshot": "https://eyyminda.github.io/Dirt-Sweeper/screenshot.jpg",
+  "author": { "@type": "Person", "name": "eyyMinda", "url": "https://github.com/eyyMinda" },
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+}
+</script>
+  <style>
+    :root {
+      --bg: #f4f3f6;
+      --surface: #ffffff;
+      --text: #18171c;
+      --muted: #5d5b66;
+      --border: #e2e0e8;
+      --accent: #e0560c;
+      --accent-text: #ffffff;
+      color-scheme: light dark;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #16161b;
+        --surface: #1f1f26;
+        --text: #ececf0;
+        --muted: #a2a2b2;
+        --border: #34343f;
+        --accent: #ff6a1a;
+        --accent-text: #1a0d05;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font: 16px/1.6 "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+    }
+
+    main,
+    header,
+    footer {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    header {
+      padding-top: 56px;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 6vw, 2.75rem);
+      line-height: 1.15;
+      margin: 0 0 8px;
+      letter-spacing: -0.02em;
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      margin: 48px 0 12px;
+    }
+
+    h3 {
+      font-size: 1.05rem;
+      margin: 0 0 4px;
+    }
+
+    .lead {
+      font-size: 1.15rem;
+      color: var(--muted);
+      max-width: 660px;
+      margin: 0 auto 24px;
+    }
+
+    a {
+      color: var(--accent);
+    }
+
+    .buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 10px 20px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+    }
+
+    .btn.primary {
+      background: var(--accent);
+      color: var(--accent-text);
+      border-color: var(--accent);
+    }
+
+    .btn small {
+      display: block;
+      font-weight: 400;
+      font-size: 0.8rem;
+      opacity: 0.85;
+    }
+
+    .note {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-top: 12px;
+    }
+
+    .shot {
+      display: block;
+      width: 100%;
+      height: auto;
+      margin: 24px 0 0;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    .card p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    ol.steps {
+      padding-left: 1.25rem;
+    }
+
+    ol.steps li {
+      margin-bottom: 6px;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    td {
+      padding: 8px 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    tr:first-child td {
+      border-top: 0;
+    }
+
+    td:first-child {
+      width: 72px;
+    }
+
+    kbd {
+      font: 600 0.85rem/1 Consolas, monospace;
+      padding: 4px 7px;
+      border: 1px solid var(--border);
+      border-bottom-width: 2px;
+      border-radius: 5px;
+      background: var(--bg);
+    }
+
+    details {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 8px;
+    }
+
+    summary {
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    details p {
+      margin: 8px 0 0;
+      color: var(--muted);
+    }
+
+    footer {
+      padding-top: 48px;
+      padding-bottom: 40px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Dirt Sweeper</h1>
+    <p class="lead">An auto sweeper for the Steam game Dirt Clicker. It sweeps your cursor over the whole dig field, plays the red-button timer minigame by itself, and keeps every setting in a small overlay on top of the game.</p>
+    <div class="buttons">
+      <a class="btn primary" id="dl" href="https://github.com/eyyMinda/Dirt-Sweeper/releases/latest">Download for Windows<small id="dl-info">Single exe, about 100 KB, no install</small></a>
+      <a class="btn" href="https://github.com/eyyMinda/Dirt-Sweeper">Source on GitHub<small>Free and open source (GPL-3.0)</small></a>
+    </div>
+    <p class="note">Windows 10 or 11. Nothing else to install. Unsigned for now: if SmartScreen warns, choose <b>More info</b>, then <b>Run anyway</b>.</p>
+  </header>
+
+  <main>
+    <img class="shot" style="margin-top: 40px" src="screenshot.jpg" width="1600" height="900" alt="Dirt Sweeper over Dirt Clicker: the HUD bar with the settings panel open, and the guides showing the dig field and sweep spots">
+
+    <h2>What it does</h2>
+    <p>In Dirt Clicker, tools on the dig field work when your cursor's hover circle touches them. Dirt Sweeper moves the cursor over the whole field for you, resting briefly on a set of spots chosen so the circles cover every pixel with no gaps, using as few spots as possible. It also watches the timer minigame and clicks the red button exactly on time.</p>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Covers the whole field</h3>
+        <p>Every layout is checked for full coverage before it's used, so nothing is missed. About one second per pass at collision radius 56.</p>
+      </div>
+      <div class="card">
+        <h3>Follows your upgrades</h3>
+        <p>Set your collision radius level once and press + when you buy an upgrade.</p>
+      </div>
+      <div class="card">
+        <h3>Plays the timer game</h3>
+        <p>Catches the moment each countdown starts and clicks on time, level after level. Flying dirt is ignored.</p>
+      </div>
+      <div class="card">
+        <h3>Settings in the overlay</h3>
+        <p>Everything is tuned from the HUD over the game, without taking focus or alt-tabbing.</p>
+      </div>
+      <div class="card">
+        <h3>Easy calibration</h3>
+        <p>Press F7 and scroll until the green ring matches the game's hover circle. Drag the dig field into place on screen.</p>
+      </div>
+      <div class="card">
+        <h3>Stays out of your way</h3>
+        <p>Stops when you move the mouse, only sweeps while the game is in front, and uses almost no CPU.</p>
+      </div>
+    </div>
+
+    <h2>Timer minigame on autopilot</h2>
+    <p>Press <kbd>F8</kbd> and click <b>Play</b>: Dirt Sweeper catches the moment each countdown starts and clicks the red button exactly on time, for every level in a row, then goes back to sweeping.</p>
+    <img class="shot" src="timer-minigame.jpg" width="1920" height="1080" loading="lazy" alt="The timer minigame played by Dirt Sweeper: the HUD shows level 2 of 3 and the game rates the click PERFECT at 00.00">
+
+    <h2>How to use it</h2>
+    <ol class="steps">
+      <li>Start Dirt Clicker and Dirt Sweeper. The HUD bar appears over the game.</li>
+      <li>Click the gear on the HUD and set <b>Collision radius level</b> to your upgrade level.</li>
+      <li>Press <kbd>F7</kbd>, move over the dig field and scroll until the green ring matches the game's hover circle. Press <kbd>F7</kbd> again.</li>
+      <li>Press <kbd>F5</kbd> to sweep. Move the mouse to stop.</li>
+      <li>For the timer minigame, press <kbd>F8</kbd>, then click <b>Play</b> in the game.</li>
+    </ol>
+
+    <table>
+      <tr><td><kbd>F5</kbd></td><td>Start / stop sweeping</td></tr>
+      <tr><td><kbd>F6</kbd></td><td>Show / hide guides (dig field, sweep spots, timer box)</td></tr>
+      <tr><td><kbd>F7</kbd></td><td>Calibration ring at the cursor: scroll to resize (Shift = fine, Ctrl = coarse)</td></tr>
+      <tr><td><kbd>F8</kbd></td><td>Arm / cancel the timer game, then click Play</td></tr>
+      <tr><td><kbd>F9</kbd></td><td>Show / hide the HUD</td></tr>
+    </table>
+
+    <h2>Questions</h2>
+    <details>
+      <summary>Is it safe to use?</summary>
+      <p>Dirt Sweeper never touches the game: it doesn't read or change game files or memory and doesn't inject anything. It only moves the mouse and looks at the timer area of the screen, like a person watching and clicking. Use it at your own discretion.</p>
+    </details>
+    <details>
+      <summary>Some tools get missed.</summary>
+      <p>Raise <b>Hold on each spot</b> in the Sweeper tab, and check the ring still matches the game's hover circle (F7). If everything gets hit, you can lower the hold for faster passes.</p>
+    </details>
+    <details>
+      <summary>It clicks the timer too early or too late.</summary>
+      <p>Change <b>Click offset</b> in the Timer game tab: if the game says you were late by X ms, lower it by X; if early, raise it.</p>
+    </details>
+    <details>
+      <summary>Does it work at other resolutions?</summary>
+      <p>Yes. Positions are scaled to the game window, and on screens wider than 16:9 the extra width goes to the dig field. The defaults are tuned for 1920×1080 fullscreen.</p>
+    </details>
+    <details>
+      <summary>How do I stop or close it?</summary>
+      <p>Move the mouse or press F5 to stop sweeping. Close it with the ✕ on the HUD, or from the tray icon.</p>
+    </details>
+
+    <h2 id="privacy">Privacy</h2>
+    <p>Dirt Sweeper collects no data and has no accounts, analytics or telemetry. It makes no network connections at all. Your settings stay in a file next to the exe. Every release is built by GitHub Actions from the public source and lists the SHA-256 of its exe in <code>SHA256SUMS.txt</code>.</p>
+  </main>
+
+  <footer>
+    <p>Dirt Sweeper by <a href="https://github.com/eyyMinda">eyyMinda</a> · <a href="https://github.com/eyyMinda/Dirt-Sweeper/blob/main/CHANGELOG.md">Changelog</a> · GPL-3.0<br>Unofficial fan-made tool. Not affiliated with or endorsed by the developers of Dirt Clicker.</p>
+  </footer>
+
+  <script>
+    // Point the download button straight at the latest release's exe; the release page stays the fallback.
+    fetch("https://api.github.com/repos/eyyMinda/Dirt-Sweeper/releases/latest")
+      .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+      .then(function (release) {
+        release.assets.forEach(function (asset) {
+          if (/^DirtSweeper-.*\.exe$/.test(asset.name)) {
+            document.getElementById("dl").href = asset.browser_download_url;
+            document.getElementById("dl-info").textContent =
+              "Version " + release.tag_name.replace(/^v/, "") + " · " + Math.max(1, Math.round(asset.size / 1024)) + " KB · no install";
+          }
+        });
+      })
+      .catch(function () { });
+  </script>
+</body>
+
+</html>

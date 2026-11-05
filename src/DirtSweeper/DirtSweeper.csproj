@@ -9,13 +9,19 @@
     <RootNamespace>DirtSweeper</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>icon.ico</ApplicationIcon>
-    <Version>2.0.0</Version>
+    <Version>0.1.0</Version>
     <Product>Dirt Sweeper</Product>
+    <Company>eyyMinda</Company>
+    <Authors>eyyMinda</Authors>
+    <Copyright>Copyright © 2026 eyyMinda</Copyright>
+    <!-- show the plain version, without a +commit suffix -->
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <DebugType>none</DebugType>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System.Runtime.Serialization" />
+    <InternalsVisibleTo Include="DirtSweeper.Tests" />
   </ItemGroup>
 </Project>

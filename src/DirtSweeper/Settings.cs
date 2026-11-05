@@ -17,17 +17,18 @@ namespace DirtSweeper
         // general
         [DataMember] public string GameProcess;
         [DataMember] public string GamePath;          // remembered when the game is seen running, for "Launch game"
-        [DataMember] public int FpsOverride;          // 0 = use the monitor's refresh rate
         [DataMember] public bool OnlyWhenFocused;
         [DataMember] public bool ShowHud;
         [DataMember] public double HudFx, HudFy;      // HUD position as a fraction of the game window
+        [DataMember] public bool ShowGuides;
+        [DataMember] public int Tab;                  // last open tab of the settings panel
 
         // sweeper
         [DataMember] public double Stat, PxPerStat;   // in-game collision radius and px of circle diameter per point
         [DataMember] public int Spacing;              // % of the radius trusted for spot spacing
-        [DataMember] public int HoldFrames;           // game frames spent on each spot
+        [DataMember] public int HoldMs;               // time spent on each spot
         [DataMember] public double AreaLeft, AreaTop, AreaRight, AreaBottom;
-        [DataMember] public bool Columns, Shift, PingPong, PauseOnMouse;
+        [DataMember] public bool Shift, PingPong, PauseOnMouse;
 
         // timer minigame
         [DataMember] public double TimerX, TimerY, TimerW, TimerH, ButtonX, ButtonY;
@@ -43,10 +44,11 @@ namespace DirtSweeper
         public void SetDefaults()
         {
             GameProcess = "Dirt Clicker"; GamePath = "";
-            FpsOverride = 0; OnlyWhenFocused = true; ShowHud = true; HudFx = 0.006; HudFy = 0.945;
-            Stat = 40; PxPerStat = 6.6; Spacing = 100; HoldFrames = 2;
-            AreaLeft = 0; AreaTop = 0; AreaRight = 1480; AreaBottom = 1080;
-            Columns = false; Shift = true; PingPong = true; PauseOnMouse = true;
+            OnlyWhenFocused = true; ShowHud = true; HudFx = 0.006; HudFy = 0.945; ShowGuides = false; Tab = 0;
+            // tuned on 1920x1080 borderless fullscreen at 144 FPS, collision radius 56
+            Stat = 56; PxPerStat = 6.6; Spacing = 100; HoldMs = 35;
+            AreaLeft = 0; AreaTop = 0; AreaRight = 1485; AreaBottom = 1080;
+            Shift = true; PingPong = true; PauseOnMouse = true;
             TimerX = 1632; TimerY = 312; TimerW = 180; TimerH = 66; ButtonX = 1809; ButtonY = 306;
             Levels = "1,2,3"; OffsetMs = -5; MinRunMs = 500; TextMin = 110; ResumeAfter = true;
         }
