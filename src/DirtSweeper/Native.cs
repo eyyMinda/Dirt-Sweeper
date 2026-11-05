@@ -70,6 +70,56 @@ namespace DirtSweeper
         [DllImport("gdi32.dll")] public static extern bool DeleteDC(IntPtr dc);
         [DllImport("gdi32.dll")] public static extern bool GdiFlush();
 
+        [DllImport("user32.dll")] public static extern short GetAsyncKeyState(int vk);
+        [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr h);
+        [DllImport("user32.dll")] public static extern int GetWindowLong(IntPtr h, int i);
+        [DllImport("user32.dll")] public static extern int SetWindowLong(IntPtr h, int i, int v);
+
+        public static bool KeyDown(System.Windows.Forms.Keys k) => (GetAsyncKeyState((int)k) & 0x8000) != 0;
+
+        [DllImport("user32.dll")] static extern bool SetWindowPos(IntPtr h, IntPtr after, int x, int y, int cx, int cy, uint flags);
+
+        /// <summary>Puts a topmost window above the other topmost windows without activating it.</summary>
+        public static void RaiseTopmost(IntPtr h) => SetWindowPos(h, (IntPtr)(-1), 0, 0, 0, 0, 0x0001 | 0x0002 | 0x0010); // NOSIZE | NOMOVE | NOACTIVATE
+
+        // ---------- per-pixel alpha windows ----------
+        [StructLayout(LayoutKind.Sequential)] public struct SIZE { public int cx, cy; }
+        [StructLayout(LayoutKind.Sequential, Pack = 1)] struct BLENDFUNCTION { public byte Op, Flags, Alpha, Format; }
+
+        [DllImport("user32.dll")]
+        static extern bool UpdateLayeredWindow(IntPtr h, IntPtr dstDc, ref POINT dst, ref SIZE size, IntPtr srcDc,
+                                               ref POINT src, int key, ref BLENDFUNCTION blend, int flags);
+
+        /// <summary>Shows a premultiplied 32bpp bitmap as the whole window, with per-pixel transparency.</summary>
+        public static void PushLayered(IntPtr hwnd, System.Drawing.Bitmap bmp, Point at)
+        {
+            IntPtr screen = GetDC(IntPtr.Zero), mem = CreateCompatibleDC(screen);
+            IntPtr hbmp = bmp.GetHbitmap(Color.FromArgb(0)), old = SelectObject(mem, hbmp);
+            try
+            {
+                var dst = new POINT { X = at.X, Y = at.Y };
+                var src = new POINT();
+                var size = new SIZE { cx = bmp.Width, cy = bmp.Height };
+                var blend = new BLENDFUNCTION { Op = 0, Flags = 0, Alpha = 255, Format = 1 }; // AC_SRC_OVER, AC_SRC_ALPHA
+                UpdateLayeredWindow(hwnd, screen, ref dst, ref size, mem, ref src, 0, ref blend, 2); // ULW_ALPHA
+            }
+            finally
+            {
+                SelectObject(mem, old);
+                DeleteObject(hbmp);
+                DeleteDC(mem);
+                ReleaseDC(IntPtr.Zero, screen);
+            }
+        }
+
+        // ---------- low-level mouse hook ----------
+        public delegate IntPtr HookProc(int code, IntPtr wParam, IntPtr lParam);
+        [StructLayout(LayoutKind.Sequential)] public struct MSLLHOOKSTRUCT { public POINT pt; public uint mouseData, flags, time; public IntPtr extra; }
+        [DllImport("user32.dll")] public static extern IntPtr SetWindowsHookEx(int id, HookProc proc, IntPtr mod, uint thread);
+        [DllImport("user32.dll")] public static extern bool UnhookWindowsHookEx(IntPtr hook);
+        [DllImport("user32.dll")] public static extern IntPtr CallNextHookEx(IntPtr hook, int code, IntPtr wParam, IntPtr lParam);
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode)] public static extern IntPtr GetModuleHandle(string name);
+
         const uint MOVE = 0x0001, LEFTDOWN = 0x0002, LEFTUP = 0x0004, VIRTUALDESK = 0x4000, ABSOLUTE = 0x8000;
 
         static void Send(uint flags, int dx = 0, int dy = 0)
@@ -134,5 +184,51 @@ namespace DirtSweeper
                 else Thread.SpinWait(20);
             }
         }
+    }
+}
+
+namespace DirtSweeper
+{
+    /// <summary>
+    /// Global mouse hook. Only installed while the app needs it (calibrating, editing, panel open),
+    /// so the wheel can resize the ring over the game without the game ever losing focus.
+    /// </summary>
+    sealed class MouseHook : System.IDisposable
+    {
+        readonly Native.HookProc proc;
+        System.IntPtr hook;
+
+        /// <summary>Wheel at a screen point with a delta (120 per notch). Return true to swallow it.</summary>
+        public System.Func<System.Drawing.Point, int, bool> Wheel;
+        /// <summary>Real (not injected) mouse movement.</summary>
+        public System.Action<System.Drawing.Point> Move;
+
+        public MouseHook() { proc = Callback; }
+
+        public void Set(bool on)
+        {
+            if (on && hook == System.IntPtr.Zero)
+                hook = Native.SetWindowsHookEx(14, proc, Native.GetModuleHandle(null), 0); // WH_MOUSE_LL
+            else if (!on && hook != System.IntPtr.Zero)
+            {
+                Native.UnhookWindowsHookEx(hook);
+                hook = System.IntPtr.Zero;
+            }
+        }
+
+        System.IntPtr Callback(int code, System.IntPtr wParam, System.IntPtr lParam)
+        {
+            if (code >= 0)
+            {
+                var m = System.Runtime.InteropServices.Marshal.PtrToStructure<Native.MSLLHOOKSTRUCT>(lParam);
+                var pt = new System.Drawing.Point(m.pt.X, m.pt.Y);
+                int msg = wParam.ToInt32();
+                if (msg == 0x020A && Wheel != null && Wheel(pt, (short)(m.mouseData >> 16))) return (System.IntPtr)1;
+                if (msg == 0x0200 && (m.flags & 1) == 0) Move?.Invoke(pt);
+            }
+            return Native.CallNextHookEx(hook, code, wParam, lParam);
+        }
+
+        public void Dispose() => Set(false);
     }
 }
