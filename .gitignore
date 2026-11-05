@@ -2,9 +2,14 @@
 bin/
 obj/
 dist/
+releases/
+TestResults/
 
 # user settings written next to the exe
 DirtSweeper.settings.json
+
+# node (only used as a task runner)
+node_modules/
 
 # editors
 .vs/

@@ -7,6 +7,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DirtSweeper", "src\DirtSweeper\DirtSweeper.csproj", "{55C9A874-0196-45BA-97E8-2E398FB1D818}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{0AB3BF05-4346-4AA6-1389-037BE0695223}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DirtSweeper.Tests", "tests\DirtSweeper.Tests\DirtSweeper.Tests.csproj", "{0233C599-113D-46CE-82DB-1188C3A6795F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -29,11 +33,24 @@ Global
 		{55C9A874-0196-45BA-97E8-2E398FB1D818}.Release|x64.Build.0 = Release|Any CPU
 		{55C9A874-0196-45BA-97E8-2E398FB1D818}.Release|x86.ActiveCfg = Release|Any CPU
 		{55C9A874-0196-45BA-97E8-2E398FB1D818}.Release|x86.Build.0 = Release|Any CPU
+		{0233C599-113D-46CE-82DB-1188C3A6795F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0233C599-113D-46CE-82DB-1188C3A6795F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0233C599-113D-46CE-82DB-1188C3A6795F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0233C599-113D-46CE-82DB-1188C3A6795F}.Debug|x64.Build.0 = Debug|Any CPU
+		{0233C599-113D-46CE-82DB-1188C3A6795F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0233C599-113D-46CE-82DB-1188C3A6795F}.Debug|x86.Build.0 = Debug|Any CPU
+		{0233C599-113D-46CE-82DB-1188C3A6795F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0233C599-113D-46CE-82DB-1188C3A6795F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0233C599-113D-46CE-82DB-1188C3A6795F}.Release|x64.ActiveCfg = Release|Any CPU
+		{0233C599-113D-46CE-82DB-1188C3A6795F}.Release|x64.Build.0 = Release|Any CPU
+		{0233C599-113D-46CE-82DB-1188C3A6795F}.Release|x86.ActiveCfg = Release|Any CPU
+		{0233C599-113D-46CE-82DB-1188C3A6795F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{55C9A874-0196-45BA-97E8-2E398FB1D818} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{0233C599-113D-46CE-82DB-1188C3A6795F} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
 	EndGlobalSection
 EndGlobal

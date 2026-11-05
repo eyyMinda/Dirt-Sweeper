@@ -1,0 +1,12 @@
+{
+  "name": "dirt-sweeper",
+  "private": true,
+  "description": "Task runner only (no node dependencies). The app is C# / .NET Framework 4.8.",
+  "scripts": {
+    "dev": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/dev.ps1",
+    "build": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/build.ps1",
+    "start": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/start.ps1",
+    "test": "dotnet test tests/DirtSweeper.Tests -c Release -nologo",
+    "release": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/release.ps1"
+  }
+}

@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+    branches: [main, "release/**"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Build
+        run: dotnet build DirtSweeper.sln -c Release
+
+      - name: Test
+        run: dotnet test tests/DirtSweeper.Tests -c Release --no-build
+
+      # the exe of every build, for trying a branch without a release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: DirtSweeper-${{ github.sha }}
+          path: src/DirtSweeper/bin/Release/net48/DirtSweeper.exe
