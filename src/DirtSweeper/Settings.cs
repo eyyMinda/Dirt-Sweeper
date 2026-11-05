@@ -22,6 +22,8 @@ namespace DirtSweeper
         [DataMember] public double HudFx, HudFy;      // HUD position as a fraction of the game window
         [DataMember] public bool ShowGuides;
         [DataMember] public int Tab;                  // last open tab of the settings panel
+        [DataMember] public bool CheckUpdates;        // check GitHub for a newer release at startup and daily
+        [DataMember] public long LastUpdateCheck;     // UTC ticks of the last check
 
         // sweeper
         [DataMember] public double Stat, PxPerStat;   // in-game collision radius and px of circle diameter per point
@@ -45,55 +47,114 @@ namespace DirtSweeper
         {
             GameProcess = "Dirt Clicker"; GamePath = "";
             OnlyWhenFocused = true; ShowHud = true; HudFx = 0.006; HudFy = 0.945; ShowGuides = false; Tab = 0;
-            // tuned on 1920x1080 borderless fullscreen at 144 FPS, collision radius 56
-            Stat = 56; PxPerStat = 6.6; Spacing = 100; HoldMs = 35;
+            CheckUpdates = true; LastUpdateCheck = 0;
+            // tuned on 1920x1080 borderless fullscreen at 144 FPS
+            Stat = 56; PxPerStat = 6.44; Spacing = 100; HoldMs = 15;
             AreaLeft = 0; AreaTop = 0; AreaRight = 1485; AreaBottom = 1080;
             Shift = true; PingPong = true; PauseOnMouse = true;
             TimerX = 1632; TimerY = 312; TimerW = 180; TimerH = 66; ButtonX = 1809; ButtonY = 306;
             Levels = "1,2,3"; OffsetMs = -5; MinRunMs = 500; TextMin = 110; ResumeAfter = true;
         }
 
-        public static string FilePath { get; } = PickPath();
+        // ---------- storage ----------
+        // %LOCALAPPDATA%\DirtSweeper\settings.json, like SteamRouteTool. Removing the app = deleting the exe and that folder.
 
-        static string PickPath()
+        public static readonly string DefaultDirectory =
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "DirtSweeper");
+
+        public static string FilePath { get; private set; } = Path.Combine(DefaultDirectory, "settings.json");
+        static bool customPath;
+
+        /// <summary>Where 0.1.0 and earlier kept the settings: next to the exe, or %AppData% when that wasn't writable.</summary>
+        static readonly string[] LegacyFiles =
         {
-            const string name = "DirtSweeper.settings.json";
-            string local = Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), name);
-            try
-            {
-                using (File.Open(local, FileMode.OpenOrCreate, FileAccess.ReadWrite)) { }
-                return local;
-            }
-            catch (Exception)
-            {
-                string dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "DirtSweeper");
-                Directory.CreateDirectory(dir);
-                return Path.Combine(dir, name);
-            }
+            Path.Combine(Path.GetDirectoryName(Application.ExecutablePath), "DirtSweeper.settings.json"),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "DirtSweeper", "DirtSweeper.settings.json"),
+        };
+
+        /// <summary>Use another settings file (dev builds: <c>--settings path</c>), so testing never touches the real one.</summary>
+        public static void UseFile(string path)
+        {
+            FilePath = Path.GetFullPath(path);
+            customPath = true;
         }
+
+        /// <summary>Set when this start moved an old settings file into the new location.</summary>
+        public static string MigratedFrom { get; private set; }
+        /// <summary>Set when the file couldn't be read (it is kept as settings.broken.json).</summary>
+        public static string LoadProblem { get; private set; }
 
         static readonly DataContractJsonSerializer serializer = new DataContractJsonSerializer(typeof(Settings));
 
+        static Settings Read(string path)
+        {
+            using (var f = File.OpenRead(path))
+                return f.Length > 0 ? (Settings)serializer.ReadObject(f) : null;
+        }
+
         public static Settings Load()
         {
+            if (!File.Exists(FilePath) && !customPath)
+            {
+                var migrated = Migrate();
+                if (migrated != null) return migrated;
+            }
             try
             {
-                using (var f = File.OpenRead(FilePath))
-                    if (f.Length > 0) return (Settings)serializer.ReadObject(f);
+                if (File.Exists(FilePath)) return Read(FilePath) ?? new Settings();
             }
-            catch (Exception) { }
+            catch (Exception)
+            {
+                // keep the unreadable file (e.g. a typo from editing it by hand) instead of silently overwriting it
+                try { File.Copy(FilePath, Path.Combine(Path.GetDirectoryName(FilePath), "settings.broken.json"), true); } catch (Exception) { }
+                LoadProblem = "the settings file couldn't be read, so defaults are used (old file kept as settings.broken.json)";
+            }
             return new Settings();
         }
 
-        public void Save()
+        /// <summary>Moves the newest pre-0.1.1 settings file into the new location and deletes the old one.</summary>
+        static Settings Migrate()
         {
+            string source = null;
+            foreach (var f in LegacyFiles)
+                if (File.Exists(f) && new FileInfo(f).Length > 0 && (source == null || File.GetLastWriteTimeUtc(f) > File.GetLastWriteTimeUtc(source)))
+                    source = f;
+            if (source == null) return null;
+            Settings s;
+            try { s = Read(source); }
+            catch (Exception) { return null; }
+            if (s == null || !s.Save()) return null;
             try
             {
-                using (var f = File.Create(FilePath))
-                using (var w = JsonReaderWriterFactory.CreateJsonWriter(f, Encoding.UTF8, false, true, "  "))
-                    serializer.WriteObject(w, this);
+                File.Delete(source);
+                string dir = Path.GetDirectoryName(source);
+                if (dir != Path.GetDirectoryName(Application.ExecutablePath) && Directory.GetFileSystemEntries(dir).Length == 0)
+                    Directory.Delete(dir);
             }
             catch (Exception) { }
+            MigratedFrom = source;
+            return s;
+        }
+
+        /// <summary>Writes the settings (to a temp file first, so a crash never leaves a half-written file). False on failure.</summary>
+        public bool Save()
+        {
+            string tmp = FilePath + ".tmp";
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(FilePath));
+                using (var f = File.Create(tmp))
+                using (var w = JsonReaderWriterFactory.CreateJsonWriter(f, Encoding.UTF8, false, true, "  "))
+                    serializer.WriteObject(w, this);
+                if (File.Exists(FilePath)) File.Replace(tmp, FilePath, null);
+                else File.Move(tmp, FilePath);
+                return true;
+            }
+            catch (Exception)
+            {
+                try { File.Delete(tmp); } catch (Exception) { }
+                return false;
+            }
         }
     }
 }

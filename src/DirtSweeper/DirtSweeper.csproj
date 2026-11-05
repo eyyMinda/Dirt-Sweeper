@@ -9,7 +9,7 @@
     <RootNamespace>DirtSweeper</RootNamespace>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <ApplicationIcon>icon.ico</ApplicationIcon>
-    <Version>0.1.0</Version>
+    <Version>0.1.1</Version>
     <Product>Dirt Sweeper</Product>
     <Company>eyyMinda</Company>
     <Authors>eyyMinda</Authors>

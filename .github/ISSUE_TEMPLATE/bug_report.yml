@@ -1,0 +1,39 @@
+name: Bug report
+description: Something in Dirt Sweeper doesn't work as it should
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for reporting! A few details help a lot.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What did you do, what did you expect, and what happened instead?
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Dirt Sweeper version
+      description: Shown in the settings panel under About.
+      placeholder: e.g. 0.1.1
+    validations:
+      required: true
+  - type: input
+    id: setup
+    attributes:
+      label: Screen and game settings
+      description: Resolution, fullscreen or windowed, refresh rate / FPS.
+      placeholder: e.g. 1920x1080 fullscreen, 144 Hz
+  - type: textarea
+    id: settings
+    attributes:
+      label: Settings file (optional)
+      description: Paste settings.json (General tab → Open settings folder, or %LOCALAPPDATA%\DirtSweeper) if it's about sweeping or the timer game.
+      render: json
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots (optional)
+      description: A screenshot with the guides on (F6) shows the field and spots.

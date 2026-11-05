@@ -1,0 +1,16 @@
+name: Feature request
+description: An idea to make Dirt Sweeper better
+labels: [enhancement]
+body:
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like?
+      description: Describe the feature and what it would help with in the game.
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Anything else? (optional)
+      description: Screenshots of the part of the game it's about, or how you'd like it to work.

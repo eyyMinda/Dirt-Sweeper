@@ -106,7 +106,7 @@ namespace DirtSweeper
         // Segoe MDL2 Assets
         public const string Play = "", Stop = "", Stopwatch = "", Eye = "",
             Settings = "", Close = "", Game = "", Minus = "", Plus = "",
-            Up = "", Down = "";
+            Up = "", Down = "", Globe = "";
     }
 
     /// <summary>
@@ -343,10 +343,13 @@ namespace DirtSweeper
             public Action Click;
             public bool Primary, Active;
             public Color ActiveColor;
+            /// <summary>Optional icon drawn left of the text: (graphics, icon box, text colour).</summary>
+            public Action<Graphics, RectangleF, Color> Icon;
         }
 
-        public static Btn B(string id, string text, Action click, string hint, bool primary = false, bool active = false, Color? activeColor = null) =>
-            new Btn { Id = id, Text = text, Click = click, Hint = hint, Primary = primary, Active = active, ActiveColor = activeColor ?? Theme.Green };
+        public static Btn B(string id, string text, Action click, string hint, bool primary = false, bool active = false,
+                            Color? activeColor = null, Action<Graphics, RectangleF, Color> icon = null) =>
+            new Btn { Id = id, Text = text, Click = click, Hint = hint, Primary = primary, Active = active, ActiveColor = activeColor ?? Theme.Green, Icon = icon };
 
         public void Buttons(params Btn[] items)
         {
@@ -365,7 +368,15 @@ namespace DirtSweeper
                 if (down) r.Offset(0, F(1));
                 Theme.Fill(g, r, F(7), bg);
                 if (it.Active) Theme.Stroke(g, r, F(7), Theme.A(it.ActiveColor, 160));
-                Theme.Draw(g, it.Text, Theme.UiBold, fg, r, StringAlignment.Center);
+                if (it.Icon == null) Theme.Draw(g, it.Text, Theme.UiBold, fg, r, StringAlignment.Center);
+                else
+                {
+                    // icon + text, centred together
+                    float iconSize = F(16), gapI = F(7), tw = Theme.Measure(it.Text, Theme.UiBold).Width;
+                    float left = r.X + Math.Max(F(8), (r.Width - iconSize - gapI - tw) / 2);
+                    it.Icon(g, new RectangleF(left, r.Y + (r.Height - iconSize) / 2, iconSize, iconSize), fg);
+                    Theme.Draw(g, it.Text, Theme.UiBold, fg, new RectangleF(left + iconSize + gapI, r.Y, r.Right - left - iconSize - gapI - F(6), r.Height));
+                }
             }
             Y += h + F(6);
         }
@@ -416,7 +427,7 @@ namespace DirtSweeper
         {
             public string Glyph, Hint;
             public Action Click;
-            public bool Visible = true, Active;
+            public bool Visible = true, Active, Badge;
             public Color ActiveColor = Theme.Accent;
         }
 
@@ -532,6 +543,13 @@ namespace DirtSweeper
                 if (btn.Active) Theme.Fill(g, r, F(8), Theme.A(btn.ActiveColor, hov ? 85 : 55));
                 else if (hov) Theme.Fill(g, r, F(8), Theme.Hover);
                 Theme.Draw(g, btn.Glyph, Theme.Icons, btn.Active ? btn.ActiveColor : hov ? Theme.Text : Theme.A(Theme.Text, 210), r, StringAlignment.Center);
+                if (btn.Badge)
+                    using (var ring = new SolidBrush(Theme.Bg))
+                    using (var dot = new SolidBrush(Theme.Blue))
+                    {
+                        g.FillEllipse(ring, r.Right - F(12), r.Y + F(3), F(10), F(10));
+                        g.FillEllipse(dot, r.Right - F(10.5f), r.Y + F(4.5f), F(7), F(7));
+                    }
             }
 
             // status dot with a soft glow
