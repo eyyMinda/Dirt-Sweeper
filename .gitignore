@@ -1,0 +1,14 @@
+# build output
+bin/
+obj/
+dist/
+
+# user settings written next to the exe
+DirtSweeper.settings.json
+
+# editors
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
