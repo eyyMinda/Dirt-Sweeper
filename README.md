@@ -1,5 +1,10 @@
 # Dirt Sweeper
 
+> [!WARNING]
+> **Dirt Sweeper is deprecated and no longer updated.** Use **[Dirt Autopilot](https://github.com/eyyMinda/DirtAutopilot)** instead: an in-game mod for Dirt Clicker with an auto-sweeper, a Sand Mines timer and relic minigame solver, a relic/chest opener, legendary protection and session stats. Website: https://eyyminda.github.io/DirtAutopilot/
+>
+> Dirt Sweeper 0.1.2 keeps working and stays available below, but it gets no new features or fixes.
+
 An auto-sweeper and timer-minigame helper for the Steam game **Dirt Clicker**: a free, small, open-source overlay for Windows.
 
 Dirt Sweeper moves your cursor over the whole dig field so every tool gets hovered without you doing it, and plays the red-button timer minigame by itself. Everything is controlled from a compact HUD bar on top of the game, including all of its settings, so you never have to alt-tab.
@@ -11,6 +16,8 @@ Current version: **0.1.2**. See [CHANGELOG.md](CHANGELOG.md) for what's new.
 ![Dirt Sweeper over Dirt Clicker: the HUD bar with the settings panel open, and the guides showing the dig field and sweep spots](docs/screenshot.jpg)
 
 ## Download
+
+For the latest features, get **[Dirt Autopilot](https://github.com/eyyMinda/DirtAutopilot/releases/latest)** instead. The last version of Dirt Sweeper is still here:
 
 Get `DirtSweeper-<version>.exe` from [Releases](https://github.com/eyyMinda/Dirt-Sweeper/releases/latest) or the [website](https://eyyminda.github.io/Dirt-Sweeper/). It's a single exe of about 100 KB with no installer.
 

@@ -4,8 +4,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Dirt Sweeper – auto sweeper and timer helper for Dirt Clicker</title>
-  <meta name="description" content="Free, open-source Windows overlay for the Steam game Dirt Clicker. Sweeps the cursor over the whole dig field with no gaps, plays the red-button timer minigame by itself, and keeps every setting in a HUD over the game.">
+  <title>Dirt Sweeper (deprecated) – use Dirt Autopilot for Dirt Clicker</title>
+  <meta name="description" content="Dirt Sweeper is deprecated: use Dirt Autopilot, the in-game automation mod for Dirt Clicker. Dirt Sweeper was a free, open-source Windows overlay for the Steam game Dirt Clicker. Sweeps the cursor over the whole dig field with no gaps, plays the red-button timer minigame by itself, and keeps every setting in a HUD over the game.">
   <link rel="canonical" href="https://eyyminda.github.io/Dirt-Sweeper/">
   <meta property="og:type" content="website">
   <meta property="og:title" content="Dirt Sweeper – auto sweeper and timer helper for Dirt Clicker">
@@ -138,6 +138,20 @@
       opacity: 0.85;
     }
 
+    .notice {
+      max-width: 680px;
+      margin: 0 auto 28px;
+      padding: 14px 18px;
+      border: 1px solid var(--accent);
+      border-radius: 10px;
+      background: var(--surface);
+      text-align: left;
+    }
+
+    .notice b:first-child {
+      color: var(--accent);
+    }
+
     .note {
       color: var(--muted);
       font-size: 0.9rem;
@@ -241,10 +255,14 @@
 
 <body>
   <header>
+    <div class="notice" role="note">
+      <b>Dirt Sweeper is deprecated and no longer updated.</b> Use <a href="https://eyyminda.github.io/DirtAutopilot/"><b>Dirt Autopilot</b></a> instead: an in-game mod for Dirt Clicker with an auto-sweeper, a Sand Mines timer and relic minigame solver, a relic/chest opener, legendary protection and session stats. Dirt Sweeper 0.1.2 keeps working and stays available below, but it gets no new features or fixes.
+    </div>
     <h1>Dirt Sweeper</h1>
     <p class="lead">An auto sweeper for the Steam game Dirt Clicker. It sweeps your cursor over the whole dig field, plays the red-button timer minigame by itself, and keeps every setting in a small overlay on top of the game.</p>
     <div class="buttons">
-      <a class="btn primary" id="dl" href="https://github.com/eyyMinda/Dirt-Sweeper/releases/latest">Download for Windows<small id="dl-info">Single exe, about 100 KB, no install</small></a>
+      <a class="btn primary" href="https://eyyminda.github.io/DirtAutopilot/">Get Dirt Autopilot<small>The maintained successor, with more features</small></a>
+      <a class="btn" id="dl" href="https://github.com/eyyMinda/Dirt-Sweeper/releases/latest">Dirt Sweeper (last version)<small id="dl-info">Single exe, about 100 KB, no install</small></a>
       <a class="btn" href="https://github.com/eyyMinda/Dirt-Sweeper">Source on GitHub<small>Free and open source (GPL-3.0)</small></a>
     </div>
     <p class="note">Windows 10 or 11. Nothing else to install. Unsigned for now: if SmartScreen warns, choose <b>More info</b>, then <b>Run anyway</b>.</p>
